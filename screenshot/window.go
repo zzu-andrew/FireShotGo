@@ -11,7 +11,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/golang/glog"
-	"github.com/janpfeifer/goshot/resources"
+	"github.com/zzu-andrew/FireShotGo/resources"
 	"image/color"
 	"strconv"
 )

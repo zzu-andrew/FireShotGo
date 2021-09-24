@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"github.com/golang/glog"
-	"github.com/janpfeifer/goshot/screenshot"
-	"github.com/janpfeifer/goshot/systray"
+	"github.com/zzu-andrew/FireShotGo/screenshot"
+	"github.com/zzu-andrew/FireShotGo/systray"
 	"os"
 )
 
