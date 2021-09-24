@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
+	"gitee.com/andrewgithub/FireShotGo/screenshot"
+	"gitee.com/andrewgithub/FireShotGo/systray"
 	"github.com/golang/glog"
-	"github.com/zzu-andrew/FireShotGo/screenshot"
-	"github.com/zzu-andrew/FireShotGo/systray"
 	"os"
 )
 

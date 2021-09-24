@@ -1,9 +1,9 @@
 package systray
 
 import (
+	"gitee.com/andrewgithub/FireShotGo/resources"
 	glst "github.com/getlantern/systray"
 	"github.com/golang/glog"
-	"github.com/janpfeifer/goshot/resources"
 	"os/exec"
 	"time"
 )

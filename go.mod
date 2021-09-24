@@ -1,4 +1,4 @@
-module github.com/zzu-andrew/FireShotGo
+module gitee.com/andrewgithub/FireShotGo
 
 go 1.17
 

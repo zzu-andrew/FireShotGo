@@ -10,8 +10,8 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"gitee.com/andrewgithub/FireShotGo/resources"
 	"github.com/golang/glog"
-	"github.com/zzu-andrew/FireShotGo/resources"
 	"image/color"
 	"strconv"
 )
