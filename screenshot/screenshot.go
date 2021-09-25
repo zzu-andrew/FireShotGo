@@ -103,22 +103,23 @@ func (gs *FireShotGO) ApplyFilters(full bool) {
 	}
 }
 
-/*
- * @brief 截图功能模块
- */
+// Run 截图的主程序
 func Run() {
 	// fyne 功能, 对Fyne不太了解的可以参考 https://gitee.com/andrewgithub/fyne-club
 	// 里面有详细的go Fyne教程，并且每小节我都实现了对应的源码
-	gs := &FireShotGO{
+	fireShotGo := &FireShotGO{
+		// 使用给后期需要 独立配置参数的 Fyne需要使用  NewWithID 没有要求的可以使用app.New()
 		App: app.NewWithID("FireShotGo"),
 	}
-	if err := gs.MakeScreenshot(); err != nil {
+	//
+	if err := fireShotGo.MakeScreenshot(); err != nil {
 		glog.Fatalf("Failed to capture screenshot: %s", err)
 	}
-	gs.BuildEditWindow()
-	gs.Win.ShowAndRun()
-	gs.miniMap.updateViewPortRect()
-	gs.miniMap.Refresh()
+
+	fireShotGo.BuildEditWindow()
+	fireShotGo.Win.ShowAndRun()
+	fireShotGo.miniMap.updateViewPortRect()
+	fireShotGo.miniMap.Refresh()
 }
 
 func (gs *FireShotGO) MakeScreenshot() error {
