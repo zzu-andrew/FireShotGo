@@ -103,9 +103,14 @@ func (gs *GoShot) ApplyFilters(full bool) {
 	}
 }
 
+/*
+ * @brief 截图功能模块
+ */
 func Run() {
+	// fyne 功能, 对Fyne不太了解的可以参考 https://gitee.com/andrewgithub/fyne-club
+	// 里面有详细的go Fyne教程，并且每小节我都实现了对应的源码
 	gs := &GoShot{
-		App: app.NewWithID("GoShot"),
+		App: app.NewWithID("FireShotGo"),
 	}
 	if err := gs.MakeScreenshot(); err != nil {
 		glog.Fatalf("Failed to capture screenshot: %s", err)

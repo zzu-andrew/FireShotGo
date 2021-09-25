@@ -3,29 +3,15 @@ package main
 import (
 	"flag"
 	"gitee.com/andrewgithub/FireShotGo/screenshot"
-	"gitee.com/andrewgithub/FireShotGo/systray"
-	"github.com/golang/glog"
-	"os"
 )
 
-var (
-	flagSysTray = flag.Bool("systray", false,
-		"Set this flag to take the app run in a system tray, and respond to a "+
-			"global shortcut to take screenshots.")
-	flagHotkey = flag.String("hotkey", "win+control+s",
-		"Hotkey to register to trigger a screenshot. It accepts any combination "+
-			"of 'shift', 'control', 'win', 'alt' and normal key, separated by '+'. Eg.: "+
-			"'win+control+s`. Only used in -systray mode.")
-)
+/**
+ * @brief 使用fyne实现截图跨平台截图工具
+ */
 
+// 后期仅支持fyne库版本的截图功能
 func main() {
-	systray.PreParseArgs = make([]string, len(os.Args))
-	copy(systray.PreParseArgs, os.Args)
+	// 参数解析
 	flag.Parse()
-	if *flagSysTray {
-		glog.Infof("Running in system tray.")
-		systray.Run()
-	} else {
-		screenshot.Run()
-	}
+	screenshot.Run()
 }

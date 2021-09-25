@@ -8,6 +8,8 @@
 
 `FireShotGo`是使用`fyne`实现的一个跨平台截图软件
 
+对于`Fyne`陌生的同学可以参考 [`fyne club`](https://gitee.com/andrewgithub/fyne-club)上面已经实现了详细的文档和对应每小节对应的源码
+
 ## 安装信息
 
 ### Linux
