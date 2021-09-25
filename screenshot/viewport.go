@@ -29,7 +29,7 @@ type ViewPort struct {
 	widget.BaseWidget
 
 	// gs points back to application object.
-	gs *GoShot
+	gs *FireShotGO
 
 	// Geometry of what is being displayed:
 	// Log2Zoom is the log2 of the zoom multiplier, it's what we show to the user. It
@@ -97,7 +97,7 @@ var (
 	_             = desktop.Hoverable(vpPlaceholder)
 )
 
-func NewViewPort(gs *GoShot) (vp *ViewPort) {
+func NewViewPort(gs *FireShotGO) (vp *ViewPort) {
 	prefOrFloat := func(pref string, defaultValue float64) (value float64) {
 		value = gs.App.Preferences().Float(pref)
 		if value == 0 {

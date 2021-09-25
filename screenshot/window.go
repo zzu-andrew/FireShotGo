@@ -16,8 +16,8 @@ import (
 	"strconv"
 )
 
-func (gs *GoShot) BuildEditWindow() {
-	gs.Win = gs.App.NewWindow(fmt.Sprintf("GoShot: screenshot @ %s", gs.ScreenshotTime.Format("2006-01-02 15:04:05")))
+func (gs *FireShotGO) BuildEditWindow() {
+	gs.Win = gs.App.NewWindow(fmt.Sprintf("FireShotGO: screenshot @ %s", gs.ScreenshotTime.Format("2006-01-02 15:04:05")))
 	gs.Win.SetIcon(resources.GoShotIconPng)
 
 	// Build menu.
@@ -147,7 +147,7 @@ func (gs *GoShot) BuildEditWindow() {
 	gs.RegisterShortcuts()
 }
 
-func (gs *GoShot) colorPicker() {
+func (gs *FireShotGO) colorPicker() {
 	glog.V(2).Infof("colorPicker():")
 	picker := dialog.NewColorPicker(
 		"Pick a Color", "Select color for edits",

@@ -15,7 +15,7 @@ type MiniMap struct {
 	widget.BaseWidget
 
 	// Application references.
-	gs *GoShot
+	gs *FireShotGO
 	vp *ViewPort
 
 	// Fyne/UI related objects.
@@ -49,7 +49,7 @@ var (
 	Transparent = color.RGBA{}
 )
 
-func NewMiniMap(gs *GoShot, vp *ViewPort) (mm *MiniMap) {
+func NewMiniMap(gs *FireShotGO, vp *ViewPort) (mm *MiniMap) {
 	mm = &MiniMap{
 		gs: gs,
 		vp: vp,

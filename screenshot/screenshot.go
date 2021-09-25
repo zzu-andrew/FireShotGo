@@ -30,7 +30,7 @@ import (
 	"time"
 )
 
-type GoShot struct {
+type FireShotGO struct {
 	// Fyne: Application and Window
 	App fyne.App
 	Win fyne.Window // Main window.
@@ -70,7 +70,7 @@ type ImageFilter interface {
 // and regenerate Screenshot.
 // If full == true, regenerates full Screenshot. If false, regenerates only
 // visible area.
-func (gs *GoShot) ApplyFilters(full bool) {
+func (gs *FireShotGO) ApplyFilters(full bool) {
 	glog.V(2).Infof("ApplyFilters: %d filters", len(gs.Filters))
 	filteredImage := image.Image(gs.OriginalScreenshot)
 	for _, filter := range gs.Filters {
@@ -109,7 +109,7 @@ func (gs *GoShot) ApplyFilters(full bool) {
 func Run() {
 	// fyne 功能, 对Fyne不太了解的可以参考 https://gitee.com/andrewgithub/fyne-club
 	// 里面有详细的go Fyne教程，并且每小节我都实现了对应的源码
-	gs := &GoShot{
+	gs := &FireShotGO{
 		App: app.NewWithID("FireShotGo"),
 	}
 	if err := gs.MakeScreenshot(); err != nil {
@@ -121,7 +121,7 @@ func Run() {
 	gs.miniMap.Refresh()
 }
 
-func (gs *GoShot) MakeScreenshot() error {
+func (gs *FireShotGO) MakeScreenshot() error {
 	n := screenshot.NumActiveDisplays()
 	if n != 1 {
 		glog.Warningf("No support for multiple displays yet (should be relatively easy to add), screenshotting first display.")
@@ -141,7 +141,7 @@ func (gs *GoShot) MakeScreenshot() error {
 }
 
 // UndoLastFilter cancels the last filter applied, and regenerates everything.
-func (gs *GoShot) UndoLastFilter() {
+func (gs *FireShotGO) UndoLastFilter() {
 	if len(gs.Filters) > 0 {
 		gs.Filters = gs.Filters[:len(gs.Filters)-1]
 		gs.ApplyFilters(true)
@@ -149,14 +149,14 @@ func (gs *GoShot) UndoLastFilter() {
 }
 
 // DefaultName returns a default name to the screenshot, based on date/time it was made.
-func (gs *GoShot) DefaultName() string {
+func (gs *FireShotGO) DefaultName() string {
 	return fmt.Sprintf("Screenshot %s",
 		gs.ScreenshotTime.Format("2006-01-02 15-04-02"))
 }
 
 // GetColorPreference returns the color set for the given key if it has been set.
 // Otherwise it returns `defaultColor`.
-func (gs *GoShot) GetColorPreference(key string, defaultColor color.RGBA) color.RGBA {
+func (gs *FireShotGO) GetColorPreference(key string, defaultColor color.RGBA) color.RGBA {
 	isSet := gs.App.Preferences().Bool(key)
 	if !isSet {
 		return defaultColor
@@ -169,7 +169,7 @@ func (gs *GoShot) GetColorPreference(key string, defaultColor color.RGBA) color.
 }
 
 // SetColorPreference sets the given color in the given preferences key.
-func (gs *GoShot) SetColorPreference(key string, c color.Color) {
+func (gs *FireShotGO) SetColorPreference(key string, c color.Color) {
 	r, g, b, a := c.RGBA()
 	gs.App.Preferences().SetInt(key+"_R", int(r))
 	gs.App.Preferences().SetInt(key+"_G", int(g))
@@ -181,8 +181,8 @@ func (gs *GoShot) SetColorPreference(key string, c color.Color) {
 const DefaultPathPreference = "DefaultPath"
 
 // SaveImage opens a file save dialog box to save the currently edited screenshot.
-func (gs *GoShot) SaveImage() {
-	glog.V(2).Info("GoShot.SaveImage")
+func (gs *FireShotGO) SaveImage() {
+	glog.V(2).Info("FireShotGO.SaveImage")
 	var fileSave *dialog.FileDialog
 	fileSave = dialog.NewFileSave(
 		func(writer fyne.URIWriteCloser, err error) {
@@ -229,8 +229,8 @@ func (gs *GoShot) SaveImage() {
 	fileSave.Show()
 }
 
-func (gs *GoShot) CopyImageToClipboard() {
-	glog.V(2).Info("GoShot.CopyImageToClipboard")
+func (gs *FireShotGO) CopyImageToClipboard() {
+	glog.V(2).Info("FireShotGO.CopyImageToClipboard")
 	err := clipboard.CopyImage(gs.Screenshot)
 	if err != nil {
 		glog.Errorf("Failed to copy to clipboard: %s", err)
@@ -245,11 +245,11 @@ const (
 )
 
 var (
-	GoogleDrivePath = []string{"GoShot"}
+	GoogleDrivePath = []string{"FireShotGO"}
 )
 
-func (gs *GoShot) ShareWithGoogleDrive() {
-	glog.V(2).Infof("GoShot.ShareWithGoogleDrive")
+func (gs *FireShotGO) ShareWithGoogleDrive() {
+	glog.V(2).Infof("FireShotGO.ShareWithGoogleDrive")
 	ctx := context.Background()
 
 	gs.status.SetText("Connecting to GoogleDrive ...")
@@ -296,7 +296,7 @@ func (gs *GoShot) ShareWithGoogleDrive() {
 	}()
 }
 
-func (gs *GoShot) askForGoogleDriveAuthorization() string {
+func (gs *FireShotGO) askForGoogleDriveAuthorization() string {
 	replyChan := make(chan string, 1)
 
 	// Create dialog to get the authorization from the user.
@@ -321,11 +321,11 @@ func (gs *GoShot) askForGoogleDriveAuthorization() string {
 	return <-replyChan
 }
 
-// RegisterShortcuts adds all the shortcuts and keys GoShot
+// RegisterShortcuts adds all the shortcuts and keys FireShotGO
 // listens to.
 // When updating here, please update also the `gs.ShowShortcutsPage()`
 // method to reflect the changes.
-func (gs *GoShot) RegisterShortcuts() {
+func (gs *FireShotGO) RegisterShortcuts() {
 	gs.Win.Canvas().AddShortcut(
 		&fyne.ShortcutCopy{},
 		func(_ fyne.Shortcut) { gs.CopyImageToClipboard() })
@@ -365,7 +365,7 @@ func (gs *GoShot) RegisterShortcuts() {
 	})
 }
 
-func (gs *GoShot) ShowShortcutsPage() {
+func (gs *FireShotGO) ShowShortcutsPage() {
 	if gs.shortcutsDialog == nil {
 		titleFn := func(title string) (l *widget.Label) {
 			l = widget.NewLabel(title)
@@ -382,7 +382,7 @@ func (gs *GoShot) ShowShortcutsPage() {
 			l.TextStyle.Italic = true
 			return l
 		}
-		gs.shortcutsDialog = dialog.NewCustom("GoShot Shortcuts", "Ok",
+		gs.shortcutsDialog = dialog.NewCustom("FireShotGO Shortcuts", "Ok",
 			container.NewVScroll(container.NewVBox(
 				titleFn("Image Manipulation"),
 				container.NewGridWithColumns(2,
@@ -416,7 +416,7 @@ func (gs *GoShot) ShowShortcutsPage() {
 
 const DelayTimePreference = "DelayTime"
 
-func (gs *GoShot) DelayedScreenshotForm() {
+func (gs *FireShotGO) DelayedScreenshotForm() {
 	if gs.delayedScreenshotDialog == nil {
 		delayEntry := widget.NewEntry()
 		delayEntry.Validator = validation.NewRegexp(`\d`, "Must contain a number")
@@ -453,7 +453,7 @@ func (gs *GoShot) DelayedScreenshotForm() {
 	gs.delayedScreenshotDialog.Show()
 }
 
-func (gs *GoShot) DelayedScreenshot(seconds int) {
+func (gs *FireShotGO) DelayedScreenshot(seconds int) {
 	glog.V(2).Infof("DelayedScreenshot(%d secs)", seconds)
 	go func() {
 		for seconds > 0 {
