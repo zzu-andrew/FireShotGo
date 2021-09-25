@@ -9,7 +9,7 @@ require (
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529
 	github.com/kbinani/screenshot v0.0.0-20210326165202-b96eb3309bb0
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e
-	golang.org/x/image v0.0.0-20200430140353-33d19683fad8
+	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
 	google.golang.org/api v0.48.0
 )
@@ -35,7 +35,7 @@ require (
 	github.com/stretchr/testify v1.6.1 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420 // indirect
-	golang.org/x/sys v0.0.0-20210603125802-9665404d3644 // indirect
+	golang.org/x/sys v0.0.0-20210820121016-41cdb8703e55 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20210604141403-392c879c8b08 // indirect

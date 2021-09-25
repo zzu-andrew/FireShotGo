@@ -31,8 +31,6 @@ sudo apt-get install libgtk-3-dev
 
 
 
-
-
 ## 历史版本
 
 ### `v1.0.0`
@@ -47,9 +45,41 @@ sudo apt-get install libgtk-3-dev
 
 ### `v1.0.1`
 
-添加中文注释
+- 添加中文注释
 
-该版本没有新增功能，主要是对原有的逻辑添加中文注释，并迁移到`gitee`上，方便后期团队开发
+- 该版本没有新增功能，主要是对原有的逻辑添加中文注释，并迁移到`gitee`上，方便后期团队开发
+
+### `v1.0.2`
+
+- 支持鼠标截图
+
+需要robot的支持，安装如果在Linux上安装robot需要安装`xcb`库，可以使用查找相关的库，并进行安装
+
+```bash
+sudo apt-cache search xcb
+```
+
+> ```go
+> package main
+> 
+> import (
+> 	"fmt"
+> 
+> 	"github.com/go-vgo/robotgo"
+> )
+> 
+> func main() {
+>   x, y := robotgo.GetMousePos()
+>   fmt.Println("pos: ", x, y)
+> 
+>   color := robotgo.GetPixelColor(100, 200)
+>   fmt.Println("color----", color)
+> }
+> ```
+
+
+
+
 
 
 
@@ -61,6 +91,7 @@ sudo apt-get install libgtk-3-dev
 
 - 增加虚线功能
 - 增加矩形框功能
+- 支持鼠标截图功能
 
 
 

@@ -111,7 +111,7 @@ func Run() {
 		// 使用给后期需要 独立配置参数的 Fyne需要使用  NewWithID 没有要求的可以使用app.New()
 		App: app.NewWithID("FireShotGo"),
 	}
-	//
+	// 开始截屏 --
 	if err := fireShotGo.MakeScreenshot(); err != nil {
 		glog.Fatalf("Failed to capture screenshot: %s", err)
 	}
@@ -122,14 +122,26 @@ func Run() {
 	fireShotGo.miniMap.Refresh()
 }
 
+// MakeScreenshot 开始截屏
 func (gs *FireShotGO) MakeScreenshot() error {
+
 	n := screenshot.NumActiveDisplays()
 	if n != 1 {
 		glog.Warningf("No support for multiple displays yet (should be relatively easy to add), screenshotting first display.")
 	}
+
+
+	// 后期支持多个屏幕的截图，这里仅支持对首屏幕截图
+	// TODO 支持鼠标绘制之后进行
+	// TODO 支持矩形绘制
+	// TODO 直线的功能
+	// TODO 虚线功能
+
 	bounds := screenshot.GetDisplayBounds(0)
+
 	var err error
 	gs.Screenshot, err = screenshot.CaptureRect(bounds)
+
 	if err != nil {
 		return err
 	}
