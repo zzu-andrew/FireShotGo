@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"gitee.com/andrewgithub/FireShotGo/firetheme"
 	"gitee.com/andrewgithub/FireShotGo/resources"
 	"github.com/golang/glog"
 	"image/color"
@@ -17,11 +18,14 @@ import (
 )
 
 func (gs *FireShotGO) BuildEditWindow() {
+	// 设置主题支持中文
+	gs.App.Settings().SetTheme(&firetheme.ShanGShouJianSongTheme{})
+
 	gs.Win = gs.App.NewWindow(fmt.Sprintf("FireShotGO: screenshot @ %s", gs.ScreenshotTime.Format("2006-01-02 15:04:05")))
 	gs.Win.SetIcon(resources.GoShotIconPng)
 
 	// Build menu.
-	menuFile := fyne.NewMenu("File",
+	menuFile := fyne.NewMenu("文件",
 		fyne.NewMenuItem("Save (ctrl+s)", func() { gs.SaveImage() }),
 		fyne.NewMenuItem("Delayed screenshot", func() { gs.DelayedScreenshotForm() }),
 	) // Quit is added automatically.

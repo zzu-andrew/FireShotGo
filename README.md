@@ -46,8 +46,48 @@ sudo apt-get install libgtk-3-dev
 ### `v1.0.1`
 
 - 添加中文注释
-
 - 该版本没有新增功能，主要是对原有的逻辑添加中文注释，并迁移到`gitee`上，方便后期团队开发
+- 支持中文，可以使用中文设置主题而不现实乱码
+
+具体方式，下载中文字体，并将对应字体通过`fyne`工具生成静态资源文件，在通过主题的`Font`接口返回
+
+```go
+fyne bundle xxxxx.ttf > bundle.go
+```
+
+比如我们这里使用中文字体实现的一个主题
+
+```go
+package firetheme
+
+import (
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/theme"
+	"image/color"
+)
+
+type ShanGShouJianSongTheme struct{}
+
+//var _ fyne.Theme = (*ShanGShouJianSongTheme)(nil)
+
+// Font 返回的就是字体名
+func (m ShanGShouJianSongTheme) Font(s fyne.TextStyle) fyne.Resource {
+	return resourceShangShouJianSongXianXiTi2Ttf
+}
+
+func (*ShanGShouJianSongTheme) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
+	return theme.DefaultTheme().Color(n, v)
+}
+
+func (*ShanGShouJianSongTheme) Icon(n fyne.ThemeIconName) fyne.Resource {
+	return theme.DefaultTheme().Icon(n)
+}
+
+func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
+	return theme.DefaultTheme().Size(n)
+}
+
+```
 
 ### `v1.0.2`
 
