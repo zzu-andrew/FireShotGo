@@ -2,6 +2,7 @@ package firetheme
 
 import (
 	_ "embed"
+	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 	"image/color"
@@ -25,6 +26,7 @@ var resourceShangShouJianSongXianXiTi2Ttf = &fyne.StaticResource{
 
 // Font 返回的就是字体名
 func (m *ShanGShouJianSongTheme) Font(s fyne.TextStyle) fyne.Resource {
+	fmt.Println(s)
 	return resourceShangShouJianSongXianXiTi2Ttf
 }
 

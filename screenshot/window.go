@@ -26,16 +26,16 @@ func (gs *FireShotGO) BuildEditWindow() {
 
 	// Build menu.
 	menuFile := fyne.NewMenu("文件",
-		fyne.NewMenuItem("Save (ctrl+s)", func() { gs.SaveImage() }),
-		fyne.NewMenuItem("Delayed screenshot", func() { gs.DelayedScreenshotForm() }),
+		fyne.NewMenuItem("保存 (ctrl+s)", func() { gs.SaveImage() }),
+		fyne.NewMenuItem("延时截屏", func() { gs.DelayedScreenshotForm() }),
 	) // Quit is added automatically.
 
 	menuShare := fyne.NewMenu("共享",
-		fyne.NewMenuItem("Copy (ctrl+c)", func() { gs.CopyImageToClipboard() }),
+		fyne.NewMenuItem("复制 (ctrl+c)", func() { gs.CopyImageToClipboard() }),
 		fyne.NewMenuItem("GoogleDrive (ctrl+g)", func() { gs.ShareWithGoogleDrive() }),
 	)
 	menuHelp := fyne.NewMenu("帮助",
-		fyne.NewMenuItem("Shortcuts (ctrl+?)", func() { gs.ShowShortcutsPage() }),
+		fyne.NewMenuItem("快捷方式 (ctrl+?)", func() { gs.ShowShortcutsPage() }),
 	)
 	mainMenu := fyne.NewMainMenu(menuFile, menuShare, menuHelp)
 	gs.Win.SetMainMenu(mainMenu)
@@ -46,12 +46,12 @@ func (gs *FireShotGO) BuildEditWindow() {
 	// Side toolbar.
 	cropTopLeft := widget.NewButtonWithIcon("", resources.CropTopLeft,
 		func() {
-			gs.status.SetText("Click on new top-left corner")
+			gs.status.SetText("点击左裁剪的上角")
 			gs.viewPort.SetOp(CropTopLeft)
 		})
 	cropBottomRight := widget.NewButtonWithIcon("", resources.CropBottomRight,
 		func() {
-			gs.status.SetText("Click on new bottom-right corner")
+			gs.status.SetText("点击裁剪的左下角")
 			gs.viewPort.SetOp(CropBottomRight)
 		})
 	cropReset := widget.NewButtonWithIcon("", resources.Reset, func() {
@@ -59,7 +59,7 @@ func (gs *FireShotGO) BuildEditWindow() {
 		gs.viewPort.SetOp(NoOp)
 	})
 
-	circleButton := widget.NewButton("Circle (alt+c)", func() { gs.viewPort.SetOp(DrawCircle) })
+	circleButton := widget.NewButton("圆 (alt+c)", func() { gs.viewPort.SetOp(DrawCircle) })
 	circleButton.SetIcon(resources.DrawCircle)
 
 	gs.thicknessEntry = &widget.Entry{Validator: validation.NewRegexp(`\d`, "Must contain a number")}
@@ -83,12 +83,12 @@ func (gs *FireShotGO) BuildEditWindow() {
 	toolBar := container.NewVBox(
 		gs.miniMap,
 		container.NewHBox(
-			widget.NewLabel("Crop:"),
+			widget.NewLabel("裁剪:"),
 			cropTopLeft,
 			cropBottomRight,
 			cropReset,
 		),
-		widget.NewButtonWithIcon("Arrow (alt+a)", resources.DrawArrow,
+		widget.NewButtonWithIcon("剪头 (alt+a)", resources.DrawArrow,
 			func() { gs.viewPort.SetOp(DrawArrow) }),
 		circleButton,
 		container.NewHBox(
@@ -96,7 +96,7 @@ func (gs *FireShotGO) BuildEditWindow() {
 			widget.NewButtonWithIcon("", resources.ColorWheel, func() { gs.colorPicker() }),
 			gs.colorSample,
 		),
-		widget.NewButtonWithIcon("Text (alt+t)", resources.DrawText,
+		widget.NewButtonWithIcon("文本 (alt+t)", resources.DrawText,
 			func() { gs.viewPort.SetOp(DrawText) }),
 	)
 
