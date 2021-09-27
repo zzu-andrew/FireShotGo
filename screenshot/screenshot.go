@@ -47,10 +47,11 @@ type FireShotGO struct {
 	// UI elements
 	zoomEntry, thicknessEntry *widget.Entry
 	colorSample               *canvas.Rectangle
-	status                    *widget.Label
-	viewPort                  *ViewPort
-	viewPortScroll            *container.Scroll
-	miniMap                   *MiniMap
+	// 工具左下角显示当前工作状态
+	status         *widget.Label
+	viewPort       *ViewPort
+	viewPortScroll *container.Scroll
+	miniMap        *MiniMap
 
 	shortcutsDialog         dialog.Dialog
 	delayedScreenshotDialog dialog.Dialog
@@ -130,7 +131,6 @@ func (gs *FireShotGO) MakeScreenshot() error {
 		glog.Warningf("No support for multiple displays yet (should be relatively easy to add), screenshotting first display.")
 	}
 
-
 	// 后期支持多个屏幕的截图，这里仅支持对首屏幕截图
 	// TODO 支持鼠标绘制之后进行
 	// TODO 支持矩形绘制
@@ -138,6 +138,8 @@ func (gs *FireShotGO) MakeScreenshot() error {
 	// TODO 虚线功能
 
 	bounds := screenshot.GetDisplayBounds(0)
+
+	fmt.Println(bounds)
 
 	var err error
 	gs.Screenshot, err = screenshot.CaptureRect(bounds)
