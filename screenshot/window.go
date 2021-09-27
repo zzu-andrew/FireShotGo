@@ -80,6 +80,7 @@ func (gs *FireShotGO) BuildEditWindow() {
 	gs.colorSample.Resize(size)
 
 	gs.miniMap = NewMiniMap(gs, gs.viewPort)
+
 	toolBar := container.NewVBox(
 		gs.miniMap,
 		container.NewHBox(
@@ -90,6 +91,9 @@ func (gs *FireShotGO) BuildEditWindow() {
 		),
 		widget.NewButtonWithIcon("剪头 (alt+a)", resources.DrawArrow,
 			func() { gs.viewPort.SetOp(DrawArrow) }),
+		// TODO 等有空找到直线的矢量图之后在替换图标
+		widget.NewButtonWithIcon("直线 (alt+l)",    resources.DrawLine,
+			func() { gs.viewPort.SetOp(DrawStraightLine) }),
 		circleButton,
 		container.NewHBox(
 			widget.NewIcon(resources.Thickness), gs.thicknessEntry,

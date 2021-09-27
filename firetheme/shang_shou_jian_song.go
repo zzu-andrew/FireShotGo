@@ -2,14 +2,12 @@ package firetheme
 
 import (
 	_ "embed"
-	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 	"image/color"
 )
 
-type ShanGShouJianSongTheme struct{
-
+type ShanGShouJianSongTheme struct {
 }
 
 //1. 第一种方式
@@ -20,13 +18,18 @@ type ShanGShouJianSongTheme struct{
 var ShangShouJianSongXianXiTi []byte
 
 var resourceShangShouJianSongXianXiTi2Ttf = &fyne.StaticResource{
-	StaticName: "ShangShouJianSongXianXiTi-2.ttf",
+	StaticName:    "ShangShouJianSongXianXiTi-2.ttf",
 	StaticContent: ShangShouJianSongXianXiTi,
 }
 
 // Font 返回的就是字体名
 func (m *ShanGShouJianSongTheme) Font(s fyne.TextStyle) fyne.Resource {
-	fmt.Println(s)
+
+	// 因为在裁剪的主题中指定了font这里不能再对类型判断，全部按照中文显示
+	//if s.Monospace || s.Bold ||  s.Italic {
+	//	return theme.DefaultTheme().Font(s)
+	//}
+
 	return resourceShangShouJianSongXianXiTi2Ttf
 }
 

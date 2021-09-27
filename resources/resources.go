@@ -30,6 +30,10 @@ var DrawCircle = fyne.NewStaticResource("", embedDrawCircle)
 var embedDrawArrow []byte
 var DrawArrow = fyne.NewStaticResource("", embedDrawArrow)
 
+//go:embed draw-line.png
+var embedDrawLine []byte
+var DrawLine = fyne.NewStaticResource("", embedDrawLine)
+
 //go:embed draw_text.png
 var embedDrawText []byte
 var DrawText = fyne.NewStaticResource("", embedDrawText)

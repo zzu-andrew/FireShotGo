@@ -51,6 +51,7 @@ type FireShotGO struct {
 	status         *widget.Label
 	viewPort       *ViewPort
 	viewPortScroll *container.Scroll
+	// 缩略窗口
 	miniMap        *MiniMap
 
 	shortcutsDialog         dialog.Dialog

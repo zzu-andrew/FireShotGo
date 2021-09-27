@@ -56,7 +56,12 @@ type ViewPort struct {
 
 	cursor                                            *canvas.Image
 	cursorCropTopLeft, cursorCropBottomRight          *canvas.Image
-	cursorDrawCircle, cursorDrawArrow, cursorDrawText *canvas.Image
+
+	// 绘图工具区域
+	cursorDrawCircle *canvas.Image
+	cursorDrawArrow *canvas.Image
+	cursorDrawText *canvas.Image
+	cursorDrawLine *canvas.Image
 
 	mouseIn         bool // Whether the mouse is over ViewPort.
 	mouseMoveEvents chan fyne.Position
@@ -73,7 +78,9 @@ type ViewPort struct {
 	// Operations
 	currentOperation OperationType
 	currentCircle    *filters.Circle // Circle being dragged, only used when currentOperation==DrawCircle.
-	currentArrow     *filters.Arrow  // Circle being dragged, only used when currentOperation==DrawCircle.
+	currentArrow     *filters.Arrow  // Circle being dragged, only used when currentOperation==DrawArrow.
+	currentStraightLine   *filters.StraightLine  // Circle being dragged, only used when currentOperation==DrawStraightLine.
+
 	fyne.ShortcutHandler
 }
 
@@ -86,6 +93,7 @@ const (
 	DrawCircle
 	DrawArrow
 	DrawText
+	DrawStraightLine
 )
 
 // Ensure ViewPort implements the following interfaces.
@@ -108,11 +116,14 @@ func NewViewPort(gs *FireShotGO) (vp *ViewPort) {
 
 	vp = &ViewPort{
 		gs:                    gs,
+		// 绘图工具初始化区域,这里生成的是跟随绘图鼠标的缩略图标
 		cursorCropTopLeft:     canvas.NewImageFromResource(resources.CropTopLeft),
 		cursorCropBottomRight: canvas.NewImageFromResource(resources.CropBottomRight),
 		cursorDrawCircle:      canvas.NewImageFromResource(resources.DrawCircle),
 		cursorDrawArrow:       canvas.NewImageFromResource(resources.DrawArrow),
 		cursorDrawText:        canvas.NewImageFromResource(resources.DrawText),
+		cursorDrawLine:        canvas.NewImageFromResource(resources.DrawLine),
+
 		mouseMoveEvents:       make(chan fyne.Position, 1000),
 
 		FontSize:  prefOrFloat(FontSizePreference, 16*float64(gs.Win.Canvas().Scale())),
@@ -342,6 +353,15 @@ func (vp *ViewPort) Dragged(ev *fyne.DragEvent) {
 				vp.DrawingColor, vp.Thickness)
 			vp.gs.Filters = append(vp.gs.Filters, vp.currentArrow)
 			vp.gs.ApplyFilters(false)
+
+		case DrawStraightLine:
+			glog.V(2).Infof("Tapped(): draw an Line starting at (%d, %d)", startX, startY)
+			vp.currentStraightLine = filters.NewStraightLine(
+				image.Point{X: startX, Y: startY},
+				image.Point{X: startX + 1, Y: startY + 1},
+				vp.DrawingColor, vp.Thickness)
+			vp.gs.Filters = append(vp.gs.Filters, vp.currentStraightLine)
+			vp.gs.ApplyFilters(false)
 		}
 
 		return // No need to process first event.
@@ -403,6 +423,8 @@ func (vp *ViewPort) doDragThrottled(ev *fyne.DragEvent) {
 		vp.dragCircle(ev.Position)
 	case DrawArrow:
 		vp.dragArrow(ev.Position)
+	case DrawStraightLine:
+		vp.dragLine(ev.Position)
 	}
 }
 
@@ -447,6 +469,20 @@ func (vp *ViewPort) dragArrow(toPos fyne.Position) {
 	toY += vp.gs.CropRect.Min.Y
 	vp.currentArrow.SetPoints(vp.currentArrow.From, image.Point{X: toX, Y: toY})
 	glog.V(2).Infof("dragArrow(): draw an arrow in %+v", vp.currentArrow)
+	vp.gs.ApplyFilters(false)
+	vp.renderCache()
+	vp.Refresh()
+}
+
+func (vp *ViewPort) dragLine(toPos fyne.Position) {
+	if vp.currentStraightLine == nil {
+		glog.Errorf("dragLine(): dragLine event, but none has been started yet!?")
+	}
+	toX, toY := vp.screenshotPos(toPos)
+	toX += vp.gs.CropRect.Min.X
+	toY += vp.gs.CropRect.Min.Y
+	vp.currentStraightLine.SetPoints(vp.currentStraightLine.From, image.Point{X: toX, Y: toY})
+	glog.V(2).Infof("dragStraightLine(): draw an line in %+v", vp.currentStraightLine)
 	vp.gs.ApplyFilters(false)
 	vp.renderCache()
 	vp.Refresh()
@@ -586,6 +622,11 @@ func (vp *ViewPort) SetOp(op OperationType) {
 		vp.cursor = vp.cursorDrawText
 		vp.cursor.Resize(cursorSize)
 		vp.gs.status.SetText("Click to define center location of text.")
+
+	case DrawStraightLine:
+		vp.cursor = vp.cursorDrawLine
+		vp.cursor.Resize(cursorSize)
+		vp.gs.status.SetText("Click and drag from start to end (point side) to draw an line!")
 	}
 }
 
