@@ -30,11 +30,11 @@ func (gs *FireShotGO) BuildEditWindow() {
 		fyne.NewMenuItem("Delayed screenshot", func() { gs.DelayedScreenshotForm() }),
 	) // Quit is added automatically.
 
-	menuShare := fyne.NewMenu("Share",
+	menuShare := fyne.NewMenu("共享",
 		fyne.NewMenuItem("Copy (ctrl+c)", func() { gs.CopyImageToClipboard() }),
 		fyne.NewMenuItem("GoogleDrive (ctrl+g)", func() { gs.ShareWithGoogleDrive() }),
 	)
-	menuHelp := fyne.NewMenu("Help",
+	menuHelp := fyne.NewMenu("帮助",
 		fyne.NewMenuItem("Shortcuts (ctrl+?)", func() { gs.ShowShortcutsPage() }),
 	)
 	mainMenu := fyne.NewMainMenu(menuFile, menuShare, menuHelp)
