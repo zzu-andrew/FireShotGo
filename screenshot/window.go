@@ -135,10 +135,10 @@ func (gs *FireShotGO) BuildEditWindow() {
 
 	// Stitch all together.
 	split := container.NewHSplit(
-		gs.viewPort,
 		toolBar,
+		gs.viewPort,
 	)
-	split.Offset = 0.8
+	split.Offset = 0.2
 
 	topLevel := container.NewBorder(
 		nil, statusBar, nil, nil, container.NewMax(split))

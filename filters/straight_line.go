@@ -10,11 +10,10 @@ import (
 )
 
 type StraightLine struct {
-	// From, To implement the starting and final point of the arrow:
-	// arrow is pointing to the "To" direction.
+	// From, To 直线开始到结束的位置记录:
 	From, To image.Point
 
-	// Color of the Arrow to be drawn.
+	// Color 指定直线的颜色.
 	Color color.Color
 
 	// Thickness of the Arrow to be drawn.

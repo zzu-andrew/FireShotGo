@@ -117,7 +117,7 @@ func Run() {
 	if err := fireShotGo.MakeScreenshot(); err != nil {
 		glog.Fatalf("Failed to capture screenshot: %s", err)
 	}
-
+	// 这里开始构建应用窗口
 	fireShotGo.BuildEditWindow()
 	fireShotGo.Win.ShowAndRun()
 	fireShotGo.miniMap.updateViewPortRect()

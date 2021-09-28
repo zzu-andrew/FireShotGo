@@ -51,8 +51,9 @@ sudo apt-get install libgtk-3-dev
 ### `v1.0.2`
 
 - 支持中文，标题全部按照中文显示
+- 更换为左边状态栏，更符合国人使用习惯
 
-![image-20210928122639915](image/image-20210928122639915.png)
+<img src="image/image-20210928124244222.png" alt="image-20210928124244222" style="zoom: 67%;" />
 
 ```go
 fyne bundle xxxxx.ttf > bundle.go
