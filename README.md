@@ -23,12 +23,15 @@ sudo apt-get install libappindicator3-dev -y
 sudo apt-get install libgtk-3-dev
 ```
 
-
-
 ### `Windows`
 
 在`windows`上需要安装配置`MinGW`环境，并配置`go`语言开发环境
 
+### 使用库
+
+请确保本地的go的`SDK`版本是1.16或以上，否则不支持`//go:embed`语法
+
+想按照库使用仅仅需要执行如下语句`go get gitee.com/andrewgithub/FireShotGo`即可将源码安装到本地，如果想在本地开发，可以直接使用git拉取仓库使用。
 
 
 ## 历史版本
@@ -93,7 +96,7 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 ```
 
-### `v1.0.2`
+### `v1.0.3`
 
 - 支持鼠标截图
 
@@ -123,17 +126,14 @@ sudo apt-cache search xcb
 
 
 
-
-
-
-
 ## `TODO`
 
-
-
-- 增加虚线功能
-- 增加矩形框功能
-- 支持鼠标截图功能
+- [x] 支持中文
+- [x] 支持直线绘制
+- [ ] 支持虚线绘制
+- [ ] 支持矩形框功能
+- [ ] 支持鼠标截图功能
+- [ ] 支持选择屏幕功能
 
 
 
