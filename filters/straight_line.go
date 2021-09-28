@@ -46,10 +46,11 @@ func (c *StraightLine) SetPoints(from, to image.Point) {
 		to.X += 1 // 保证直线最少为一个像素大小，否则图像上显示不出来
 	}
 	c.From, c.To = from, to
-	// rect 确保最小值小于最大值Canon
+	// rect 确保最小值小于最大值,保证由Min 指向Max 如果不是就反转
 	c.rect = image.Rectangle{Min: from, Max: to}.Canon()
-
-	headExtraPixels := int(straightLineHeadWidthFactor*c.Thickness + 0.99)
+	// 保证线条的宽度，在做矩阵转换的时候能保证起点和结束点的宽度一致
+	// 设置线条的宽度
+	headExtraPixels := int(c.Thickness)
 	c.rect.Min.X -= headExtraPixels
 	c.rect.Min.Y -= headExtraPixels
 	c.rect.Max.X += headExtraPixels
@@ -67,7 +68,7 @@ func (c *StraightLine) SetPoints(from, to image.Point) {
 	angle := math.Atan2(direction.Y(), direction.X())
 	glog.V(2).Infof("SetPoints(from=%v, to=%v): delta=%v, length=%.0f, angle=%5.1f",
 		from, to, delta, c.vectorLength, mgl64.RadToDeg(angle))
-
+	//fmt.Println(angle)
 	c.rebaseMatrix = mgl64.HomogRotate2D(-angle)
 	c.rebaseMatrix = c.rebaseMatrix.Mul3(
 		mgl64.Translate2D(float64(-c.From.X), float64(-c.From.Y)))
@@ -106,19 +107,18 @@ func (c *StraightLine) at(x, y int, under color.Color) color.Color {
 	if homogPoint.X() < 0 {
 		return under
 	}
-	if homogPoint.X() < c.vectorLength-arrowHeadLengthFactor*c.Thickness {
+
+	if homogPoint.X() < c.vectorLength {
 		if math.Abs(homogPoint.Y()) < c.Thickness/2 {
 			return c.Color
 		}
-	} else {
-		if math.Abs(homogPoint.Y()) < (c.vectorLength-homogPoint.X())*straightLineHeadWidthFactor/arrowHeadLengthFactor/2.0 {
-			return c.Color
-		}
 	}
+
 	return under
 }
 
 // Apply 接口ImageFilter的实现.
+// 实现方式，若是需要绘制的图，就替换为当先选中的颜色，若是不是就返回背景颜色 under
 func (c *StraightLine) Apply(image image.Image) image.Image {
 	return &filterImage{image, c.at}
 }

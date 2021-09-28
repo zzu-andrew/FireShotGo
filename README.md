@@ -98,38 +98,25 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 ### `v1.0.3`
 
-- 支持鼠标截图
+- 支持等宽直线功能
 
-需要robot的支持，安装如果在Linux上安装robot需要安装`xcb`库，可以使用查找相关的库，并进行安装
-
-```bash
-sudo apt-cache search xcb
-```
-
-> ```go
-> package main
-> 
-> import (
-> 	"fmt"
-> 
-> 	"github.com/go-vgo/robotgo"
-> )
-> 
-> func main() {
->   x, y := robotgo.GetMousePos()
->   fmt.Println("pos: ", x, y)
-> 
->   color := robotgo.GetPixelColor(100, 200)
->   fmt.Println("color----", color)
-> }
-> ```
+<img src="image/image-20210929001751677.png" alt="image-20210929001751677" style="zoom:67%;" />
 
 
+
+
+
+## 加入我们
+
+扫描二维码，拉你进入`FireShotGo`开发大家庭，一起学习，一起进步！
+
+![](image/%E5%BE%AE%E4%BF%A1%E4%BA%8C%E7%BB%B4%E7%A0%81.png)
 
 ## `TODO`
 
 - [x] 支持中文
 - [x] 支持直线绘制
+- [x] 支持等宽直线绘制
 - [ ] 支持虚线绘制
 - [ ] 支持矩形框功能
 - [ ] 支持鼠标截图功能

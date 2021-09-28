@@ -32,9 +32,7 @@ const (
 	arrowHeadWidthFactor  = 6.0
 )
 
-// NewArrow creates a new Arrow (or ellipsis) filter. It draws
-// an ellipsis whose dimensions fit the given rectangle.
-// You must specify the color and the thickness of the Arrow to be drawn.
+// NewArrow 创建一个箭头，必须传入起始点和颜色，以及线条的宽度
 func NewArrow(from, to image.Point, color color.Color, thickness float64) *Arrow {
 	c := &Arrow{Color: color, Thickness: thickness}
 	c.SetPoints(from, to)
@@ -53,9 +51,7 @@ func (c *Arrow) SetPoints(from, to image.Point) {
 	c.rect.Max.X += arrowHeadExtraPixels
 	c.rect.Max.Y += arrowHeadExtraPixels
 
-	// Calculate matrix that will rotate and translate a point
-	// relative to the segment from c.From to c.To, with origin in
-	// c.From.
+	// 计算矢量差
 	delta := c.To.Sub(c.From)
 	vector := mgl64.Vec2{float64(delta.X), float64(delta.Y)}
 	c.vectorLength = vector.Len()
@@ -106,11 +102,14 @@ func (c *Arrow) at(x, y int, under color.Color) color.Color {
 	if homogPoint.X() < 0 {
 		return under
 	}
+	// arrowHeadLengthFactor*c.Thickness 是预留给剪头的长度
 	if homogPoint.X() < c.vectorLength-arrowHeadLengthFactor*c.Thickness {
 		if math.Abs(homogPoint.Y()) < c.Thickness/2 {
 			return c.Color
 		}
 	} else {
+		// 绘制剪头的地方，上面已经给剪头预留长度了，这里就按照剪头的长度绘制x轴和y轴，返回color的都会绘制成当先选中的颜色
+		// c.vectorLength-homogPoint.X() 的长度就是直线结束，剪头开始的地方的长度
 		if math.Abs(homogPoint.Y()) < (c.vectorLength-homogPoint.X())*arrowHeadWidthFactor/arrowHeadLengthFactor/2.0 {
 			return c.Color
 		}

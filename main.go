@@ -13,5 +13,6 @@ import (
 func main() {
 	// 参数解析
 	flag.Parse()
+
 	screenshot.Run()
 }
