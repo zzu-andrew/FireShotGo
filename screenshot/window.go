@@ -83,12 +83,6 @@ func (gs *FireShotGO) BuildEditWindow() {
 
 	toolBar := container.NewVBox(
 		gs.miniMap,
-		container.NewHBox(
-			widget.NewLabel("裁剪:"),
-			cropTopLeft,
-			cropBottomRight,
-			cropReset,
-		),
 		widget.NewButtonWithIcon("剪头 (alt+a)", resources.DrawArrow,
 			func() { gs.viewPort.SetOp(DrawArrow) }),
 		// TODO 等有空找到直线的矢量图之后在替换图标
@@ -102,6 +96,12 @@ func (gs *FireShotGO) BuildEditWindow() {
 		),
 		widget.NewButtonWithIcon("文本 (alt+t)", resources.DrawText,
 			func() { gs.viewPort.SetOp(DrawText) }),
+		container.NewHBox(
+			widget.NewLabel("裁剪:"),
+			cropTopLeft,
+			cropBottomRight,
+			cropReset,
+		),
 	)
 
 	// Status bar with zoom control.
