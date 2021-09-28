@@ -90,18 +90,18 @@ func (gs *FireShotGO) BuildEditWindow() {
 			func() { gs.viewPort.SetOp(DrawStraightLine) }),
 		circleButton,
 		container.NewHBox(
+			widget.NewLabel("裁剪:"),
+			cropTopLeft,
+			cropBottomRight,
+			cropReset,
+		),
+		container.NewHBox(
 			widget.NewIcon(resources.Thickness), gs.thicknessEntry,
 			widget.NewButtonWithIcon("", resources.ColorWheel, func() { gs.colorPicker() }),
 			gs.colorSample,
 		),
 		widget.NewButtonWithIcon("文本 (alt+t)", resources.DrawText,
 			func() { gs.viewPort.SetOp(DrawText) }),
-		container.NewHBox(
-			widget.NewLabel("裁剪:"),
-			cropTopLeft,
-			cropBottomRight,
-			cropReset,
-		),
 	)
 
 	// Status bar with zoom control.

@@ -37,8 +37,6 @@ sudo apt-get install libgtk-3-dev
 
 主要功能，实现截图的基本功能，能够绘制箭头，绘制椭圆型标记，添加文本的基本功能
 
-<img src="image/image-20210925073340293.png" alt="image-20210925073340293" style="zoom: 50%;" />
-
 **功耗**
 
 在八核的`ubuntu`及机器上，一般占用`CPU`5.9左右
@@ -47,9 +45,14 @@ sudo apt-get install libgtk-3-dev
 
 - 添加中文注释
 - 该版本没有新增功能，主要是对原有的逻辑添加中文注释，并迁移到`gitee`上，方便后期团队开发
-- 支持中文，可以使用中文设置主题而不现实乱码
 
 具体方式，下载中文字体，并将对应字体通过`fyne`工具生成静态资源文件，在通过主题的`Font`接口返回
+
+### `v1.0.2`
+
+- 支持中文，标题全部按照中文显示
+
+![image-20210928122639915](image/image-20210928122639915.png)
 
 ```go
 fyne bundle xxxxx.ttf > bundle.go
