@@ -360,6 +360,7 @@ func (vp *ViewPort) Dragged(ev *fyne.DragEvent) {
 				image.Point{X: startX, Y: startY},
 				image.Point{X: startX + 1, Y: startY + 1},
 				vp.DrawingColor, vp.Thickness)
+
 			vp.gs.Filters = append(vp.gs.Filters, vp.currentStraightLine)
 			vp.gs.ApplyFilters(false)
 		}
@@ -474,6 +475,7 @@ func (vp *ViewPort) dragArrow(toPos fyne.Position) {
 	vp.Refresh()
 }
 
+// dragLine 当前窗口的左上角位置
 func (vp *ViewPort) dragLine(toPos fyne.Position) {
 	if vp.currentStraightLine == nil {
 		glog.Errorf("dragLine(): dragLine event, but none has been started yet!?")
@@ -496,7 +498,7 @@ func (vp *ViewPort) DragEnd() {
 	switch vp.currentOperation {
 	case NoOp, CropTopLeft, CropBottomRight, DrawText:
 		// Drag the image around, nothing to do to start.
-	case DrawCircle, DrawArrow:
+	case DrawCircle, DrawArrow, DrawStraightLine:
 		vp.gs.ApplyFilters(true)
 	}
 	vp.dragEvents = nil
@@ -505,9 +507,10 @@ func (vp *ViewPort) DragEnd() {
 	switch vp.currentOperation {
 	case NoOp, CropTopLeft, CropBottomRight, DrawText:
 		// Nothing to do
-	case DrawCircle, DrawArrow:
+	case DrawCircle, DrawArrow, DrawStraightLine:
 		vp.currentCircle = nil
 		vp.currentArrow = nil
+		vp.currentStraightLine = nil
 		vp.gs.status.SetText("Drawing done, use Control+Z to undo.")
 		vp.SetOp(NoOp)
 	}

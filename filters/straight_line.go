@@ -16,45 +16,54 @@ type StraightLine struct {
 	// Color 指定直线的颜色.
 	Color color.Color
 
-	// Thickness of the Arrow to be drawn.
+	// Thickness 指定直线的宽度
 	Thickness float64
 
-	// Rectangle enclosing arrow.
+	// Rectangle enclosing straight line.
 	rect image.Rectangle
 
 	rebaseMatrix mgl64.Mat3
+	// 按照矢量求出当前绘制的长度
 	vectorLength float64
 }
 
 
-// NewStraightLine creates a new Arrow (or ellipsis) filter. It draws
-// an ellipsis whose dimensions fit the given rectangle.
-// You must specify the color and the thickness of the Arrow to be drawn.
+// NewStraightLine 创建一个新的直线，接口中国捏必须传入直线的宽度、颜色以及起点.
 func NewStraightLine(from, to image.Point, color color.Color, thickness float64) *StraightLine {
 	c := &StraightLine{Color: color, Thickness: thickness}
 	c.SetPoints(from, to)
 	return c
 }
 
+const (
+	straightLineHeadLengthFactor = 10.0
+	straightLineHeadWidthFactor  = 6.0
+)
+
+// SetPoints
 func (c *StraightLine) SetPoints(from, to image.Point) {
 	if to.X == from.X && to.Y == from.Y {
-		to.X += 1 // So that arrow is always at least 1 in size.
+		to.X += 1 // 保证直线最少为一个像素大小，否则图像上显示不出来
 	}
 	c.From, c.To = from, to
+	// rect 确保最小值小于最大值Canon
 	c.rect = image.Rectangle{Min: from, Max: to}.Canon()
-	arrowHeadExtraPixels := int(arrowHeadWidthFactor*c.Thickness + 0.99)
-	c.rect.Min.X -= arrowHeadExtraPixels
-	c.rect.Min.Y -= arrowHeadExtraPixels
-	c.rect.Max.X += arrowHeadExtraPixels
-	c.rect.Max.Y += arrowHeadExtraPixels
 
-	// Calculate matrix that will rotate and translate a point
-	// relative to the segment from c.From to c.To, with origin in
-	// c.From.
+	headExtraPixels := int(straightLineHeadWidthFactor*c.Thickness + 0.99)
+	c.rect.Min.X -= headExtraPixels
+	c.rect.Min.Y -= headExtraPixels
+	c.rect.Max.X += headExtraPixels
+	c.rect.Max.Y += headExtraPixels
+
+	// 求出从开始到结束的delta，随着鼠标的拖动会一直触发
 	delta := c.To.Sub(c.From)
+	//fmt.Println(delta)
 	vector := mgl64.Vec2{float64(delta.X), float64(delta.Y)}
+	// 求出当前直线的长度
 	c.vectorLength = vector.Len()
+	// 求出直线的方向
 	direction := vector.Mul(1.0 / c.vectorLength)
+	// 角度
 	angle := math.Atan2(direction.Y(), direction.X())
 	glog.V(2).Infof("SetPoints(from=%v, to=%v): delta=%v, length=%.0f, angle=%5.1f",
 		from, to, delta, c.vectorLength, mgl64.RadToDeg(angle))
@@ -102,14 +111,14 @@ func (c *StraightLine) at(x, y int, under color.Color) color.Color {
 			return c.Color
 		}
 	} else {
-		if math.Abs(homogPoint.Y()) < (c.vectorLength-homogPoint.X())*arrowHeadWidthFactor/arrowHeadLengthFactor/2.0 {
+		if math.Abs(homogPoint.Y()) < (c.vectorLength-homogPoint.X())*straightLineHeadWidthFactor/arrowHeadLengthFactor/2.0 {
 			return c.Color
 		}
 	}
 	return under
 }
 
-// Apply implements the ImageFilter interface.
+// Apply 接口ImageFilter的实现.
 func (c *StraightLine) Apply(image image.Image) image.Image {
 	return &filterImage{image, c.at}
 }
