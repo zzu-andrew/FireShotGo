@@ -102,7 +102,11 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 <img src="image/image-20210929001751677.png" alt="image-20210929001751677" style="zoom:67%;" />
 
+### `v1.0.4`
 
+支持文本的中文输入
+
+<img src="image/image-20210929123025162.png" alt="image-20210929123025162" style="zoom:67%;" />
 
 
 
@@ -117,10 +121,13 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 - [x] 支持中文
 - [x] 支持直线绘制
 - [x] 支持等宽直线绘制
+- [ ] 支持叠加中文文本
 - [ ] 支持虚线绘制
 - [ ] 支持矩形框功能
 - [ ] 支持鼠标截图功能
 - [ ] 支持选择屏幕功能
+- [ ] 支持多种字体
+- [ ] 支持多种字体的中文文本叠加
 
 
 

@@ -1,10 +1,10 @@
 package filters
 
 import (
+	"gitee.com/andrewgithub/FireShotGo/firetheme"
 	"github.com/golang/freetype/truetype"
 	"github.com/golang/glog"
 	"golang.org/x/image/font"
-	"golang.org/x/image/font/gofont/gobold"
 	"golang.org/x/image/math/fixed"
 	"image"
 	"image/color"
@@ -52,7 +52,7 @@ func NewText(text string, center image.Point, color, background color.Color, siz
 func (t *Text) SetText(text string) {
 	t.Text = text
 	point := fixed.Point26_6{X: 0, Y: fixed.Int26_6(t.Size * 64)}
-	goBoldFont, err := truetype.Parse(gobold.TTF)
+	goBoldFont, err := truetype.Parse(firetheme.ShangShouJianSongXianXiTi)
 	if err != nil {
 		glog.Fatalf("Failed to generate font for golang.org/x/image/font/gofont/gobold TTF.")
 	}

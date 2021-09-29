@@ -10,7 +10,7 @@ import (
 type ShanGShouJianSongTheme struct {
 }
 
-//1. 第一种方式
+// ShangShouJianSongXianXiTi 1. 第一种方式
 // 这个功能只有go 1.16之后的版本才支持的，如果你的版本是1.16之前，请使用
 // fyne bundle ShangShouJianSongXianXiTi-2.ttf > bundle.go
 // 2. 第二种方式

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"gitee.com/andrewgithub/FireShotGo/screenshot"
+	"github.com/golang/glog"
 )
 
 /**
@@ -13,6 +14,7 @@ import (
 func main() {
 	// 参数解析
 	flag.Parse()
+	defer glog.Flush()
 
 	screenshot.Run()
 }
