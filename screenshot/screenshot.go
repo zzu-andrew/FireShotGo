@@ -55,11 +55,14 @@ type FireShotGO struct {
 	miniMap        *MiniMap
 
 	shortcutsDialog         dialog.Dialog
+	// 延时截屏的时候掉用出来，其实是一个表单
 	delayedScreenshotDialog dialog.Dialog
 
 	// GoogleDrive manager
 	gDrive          *googledrive.Manager
 	gDriveNumShared int
+	// 记录当前需要截取那个屏幕,默认情况下是0
+	displayIndex int
 }
 
 type ImageFilter interface {
@@ -111,14 +114,16 @@ func Run() {
 	// 里面有详细的go Fyne教程，并且每小节我都实现了对应的源码
 	fireShotGo := &FireShotGO{
 		// 使用给后期需要 独立配置参数的 Fyne需要使用  NewWithID 没有要求的可以使用app.New()
+		// 使用带有ID的new方便后期绑定数据使用
 		App: app.NewWithID("FireShotGo"),
 	}
 	// 开始截屏 --
 	if err := fireShotGo.MakeScreenshot(); err != nil {
 		glog.Fatalf("Failed to capture screenshot: %s", err)
 	}
-	// 这里开始构建应用窗口
+	// 这里开始构建应用窗口，crete content
 	fireShotGo.BuildEditWindow()
+	// 开始运行主窗口
 	fireShotGo.Win.ShowAndRun()
 	fireShotGo.miniMap.updateViewPortRect()
 	fireShotGo.miniMap.Refresh()
@@ -138,7 +143,7 @@ func (gs *FireShotGO) MakeScreenshot() error {
 	// TODO 直线的功能
 	// TODO 虚线功能
 
-	bounds := screenshot.GetDisplayBounds(0)
+	bounds := screenshot.GetDisplayBounds(gs.displayIndex)
 
 	fmt.Println(bounds)
 
@@ -431,33 +436,59 @@ func (gs *FireShotGO) ShowShortcutsPage() {
 }
 
 const DelayTimePreference = "DelayTime"
+const SelectScreenIndex = "SelectScreen"
 
 func (gs *FireShotGO) DelayedScreenshotForm() {
 	if gs.delayedScreenshotDialog == nil {
+		// 这里增加一个屏幕选择的窗口
+		selectEntry := widget.NewEntry()
+		selectEntry.Validator = validation.NewRegexp(`[1,2]`, "1 or 2 screen")
+		se := gs.App.Preferences().Int(SelectScreenIndex)
+		if se == 0 {
+			se = 1
+		}
+		// pre value
+		//selectEntry
+
+		// ----------------------------
+		// 新弹出一个输入窗口
 		delayEntry := widget.NewEntry()
+		// 这里为输入窗口指定正则表达式式函数，一旦Validator为非空，窗口输入的所有内容将经过Validator指向的函数检测
 		delayEntry.Validator = validation.NewRegexp(`\d`, "Must contain a number")
+		// 使用App config全局配置参数获取参数，应用关闭也会有记录(如果设定过的话)
 		v := gs.App.Preferences().Int(DelayTimePreference)
 		if v == 0 {
 			v = 5
 		}
+		// 填写预填写的数值，如果用户没有填写就替用户填写
 		delayEntry.SetText(strconv.FormatInt(int64(v), 10))
+		// 占位符，如果用户删除所有的内容，在Entry地方填写该数值
+		delayEntry.SetPlaceHolder(strconv.FormatInt(int64(v), 10))
+		// 创建新表单，点击文件-->延时截屏，弹出来该表单
+		// 表单也改用中文，不再使用官方默认的英文
 		gs.delayedScreenshotDialog = dialog.NewForm(
-			"Delayed Screenshot",
-			"Ok", "Cancel",
+			"延时截屏",
+			"确认", "取消",
 			[]*widget.FormItem{
 				widget.NewFormItem("Screenshot after (seconds)",
 					delayEntry),
-			}, func(ok bool) {
+			},
+			func(ok bool) {
 				if ok {
 					secs, err := strconv.ParseInt(delayEntry.Text, 10, 64)
 					if err != nil {
+						// FIXME : 调整状态信息
+						// 如果出错状态栏显示错误，状态栏目前挡放到了左下角，后期会调整到右下角
 						gs.status.SetText(fmt.Sprintf("Can't parse seconds in delay from %q: %s",
 							delayEntry.Text, err))
 						glog.Errorf("Can't parse seconds in delay from %q: %s",
 							delayEntry.Text, err)
 						return
 					}
+					// 填写的秒数，会通过App config，下次软件启动也能记录， 详情见我给出的教程：
+					// @fyne_club https://gitee.com/andrewgithub/fyne-club/tree/master/bundle_data
 					gs.App.Preferences().SetInt(DelayTimePreference, int(secs))
+					// 开始延时截屏
 					gs.DelayedScreenshot(int(secs))
 				}
 			}, gs.Win)

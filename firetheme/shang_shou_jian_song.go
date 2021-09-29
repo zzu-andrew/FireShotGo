@@ -7,6 +7,7 @@ import (
 	"image/color"
 )
 
+// ShanGShouJianSongTheme 设置自定义主题，主要用于支持中文
 type ShanGShouJianSongTheme struct {
 }
 

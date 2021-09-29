@@ -15,6 +15,6 @@ func main() {
 	// 参数解析
 	flag.Parse()
 	defer glog.Flush()
-
+	// 开启截屏软件主程序
 	screenshot.Run()
 }
