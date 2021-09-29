@@ -24,7 +24,7 @@ func (gs *FireShotGO) BuildEditWindow() {
 	gs.Win = gs.App.NewWindow(fmt.Sprintf("FireShotGO: screenshot @ %s", gs.ScreenshotTime.Format("2006-01-02 15:04:05")))
 	gs.Win.SetIcon(resources.GoShotIconPng)
 
-	// Build menu.
+	// 构建菜单
 	menuFile := fyne.NewMenu("文件",
 		fyne.NewMenuItem("保存 (ctrl+s)", func() { gs.SaveImage() }),
 		fyne.NewMenuItem("延时截屏", func() { gs.DelayedScreenshotForm() }),
