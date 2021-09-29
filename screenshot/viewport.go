@@ -28,7 +28,7 @@ import (
 type ViewPort struct {
 	widget.BaseWidget
 
-	// gs points back to application object.
+	// gs 应用全局变量指针.
 	gs *FireShotGO
 
 	// Geometry of what is being displayed:
@@ -36,7 +36,7 @@ type ViewPort struct {
 	// is set by the "zoomEntry" field in the UI
 	Log2Zoom float64
 
-	// Thickness of stroke drawing circles and arrows. Set by the corresponding UI element.
+	// Thickness 存储绘制直线等元素的宽度元素.
 	Thickness float64
 
 	// DrawingColor is used on all new drawing operation. BackgroundColor is used
@@ -75,11 +75,11 @@ type ViewPort struct {
 	dragStartViewX, dragStartViewY int
 	dragSkipTap                    bool // Set at DragEnd(), because the end of the drag also triggers a tap.
 
-	// Operations
+	// 鼠标点击之后触发事件调用的 操作
 	currentOperation OperationType
-	currentCircle    *filters.Circle // Circle being dragged, only used when currentOperation==DrawCircle.
-	currentArrow     *filters.Arrow  // Circle being dragged, only used when currentOperation==DrawArrow.
-	currentStraightLine   *filters.StraightLine  // Circle being dragged, only used when currentOperation==DrawStraightLine.
+	currentCircle    *filters.Circle // 开始绘制圆, 只有当先设置 currentOperation==DrawCircle 之后才能使用
+	currentArrow     *filters.Arrow  // 开始绘制箭头, 只有设置 currentOperation==DrawArrow 之后才能使用
+	currentStraightLine   *filters.StraightLine  // 开始绘制直线 只有设置了 currentOperation==DrawStraightLine 之后才能使用
 
 	fyne.ShortcutHandler
 }
@@ -88,11 +88,17 @@ type OperationType int
 
 const (
 	NoOp OperationType = iota
+	// CropTopLeft 裁剪点 - 左上角
 	CropTopLeft
+	// CropBottomRight 裁剪点 - 右下角
 	CropBottomRight
+	// DrawCircle 绘制圆 包括椭圆和圆
 	DrawCircle
+	// DrawArrow 绘制剪头
 	DrawArrow
+	// DrawText 绘制文本
 	DrawText
+	// DrawStraightLine 绘制直线
 	DrawStraightLine
 )
 

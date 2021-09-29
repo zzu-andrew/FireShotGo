@@ -447,8 +447,10 @@ func (gs *FireShotGO) DelayedScreenshotForm() {
 		if se == 0 {
 			se = 1
 		}
-		// pre value
-		//selectEntry
+		// 设置预写字段
+		selectEntry.SetText(strconv.FormatInt(int64(se), 10))
+		// 设置占位符，虽然这里自己只有两个屏幕但是为了避免有很多屏幕的情况，还是选择使用10进制
+		selectEntry.SetPlaceHolder(strconv.FormatInt(int64(se), 10))
 
 		// ----------------------------
 		// 新弹出一个输入窗口
@@ -470,11 +472,28 @@ func (gs *FireShotGO) DelayedScreenshotForm() {
 			"延时截屏",
 			"确认", "取消",
 			[]*widget.FormItem{
-				widget.NewFormItem("Screenshot after (seconds)",
+				widget.NewFormItem("输入屏幕序号 ",
+					selectEntry),
+				widget.NewFormItem("截屏延时 (s)",
 					delayEntry),
 			},
 			func(ok bool) {
 				if ok {
+					// 获取并处理屏幕选择信息
+					sn, err :=  strconv.ParseInt(selectEntry.Text, 10, 64)
+					if err != nil {
+						// 如果出错状态栏显示错误，状态栏目前挡放到了左下角，后期会调整到右下角
+						gs.status.SetText(fmt.Sprintf("Can't parse screen no in sm from %q: %s",
+							selectEntry.Text, err))
+						glog.Errorf("Can't parse screen no in sm from %q: %s",
+							selectEntry.Text, err)
+						return
+					}
+					gs.App.Preferences().SetInt(SelectScreenIndex, int(sn))
+					// 记录界面要输入的截屏序号，因为屏幕序号是从0开始的，因此输入的截屏序号只能是从[0-1]
+					// 为了保持和电脑上计算屏幕的序号相同，这里代码中将序号调整
+					gs.displayIndex = int(sn) - 1
+					// 获取并处理延时信息 delayEntry.Text 是窗口输入的文本
 					secs, err := strconv.ParseInt(delayEntry.Text, 10, 64)
 					if err != nil {
 						// FIXME : 调整状态信息
@@ -488,6 +507,7 @@ func (gs *FireShotGO) DelayedScreenshotForm() {
 					// 填写的秒数，会通过App config，下次软件启动也能记录， 详情见我给出的教程：
 					// @fyne_club https://gitee.com/andrewgithub/fyne-club/tree/master/bundle_data
 					gs.App.Preferences().SetInt(DelayTimePreference, int(secs))
+
 					// 开始延时截屏
 					gs.DelayedScreenshot(int(secs))
 				}

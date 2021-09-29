@@ -27,7 +27,7 @@ func (gs *FireShotGO) BuildEditWindow() {
 	// 构建菜单
 	menuFile := fyne.NewMenu("文件",
 		fyne.NewMenuItem("保存 (ctrl+s)", func() { gs.SaveImage() }),
-		fyne.NewMenuItem("延时截屏", func() { gs.DelayedScreenshotForm() }),
+		fyne.NewMenuItem("截屏", func() { gs.DelayedScreenshotForm() }),
 	) // Quit is added automatically.
 
 	menuShare := fyne.NewMenu("共享",
@@ -83,9 +83,9 @@ func (gs *FireShotGO) BuildEditWindow() {
 
 	toolBar := container.NewVBox(
 		gs.miniMap,
-		widget.NewButtonWithIcon("剪头 (alt+a)", resources.DrawArrow,
+		widget.NewButtonWithIcon("箭头 (alt+a)", resources.DrawArrow,
 			func() { gs.viewPort.SetOp(DrawArrow) }),
-		// TODO 等有空找到直线的矢量图之后在替换图标
+		// FIXME: 已添加矢量图标 2021-09-30
 		widget.NewButtonWithIcon("直线 (alt+l)",    resources.DrawLine,
 			func() { gs.viewPort.SetOp(DrawStraightLine) }),
 		circleButton,
