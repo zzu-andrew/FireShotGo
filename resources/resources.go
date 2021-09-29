@@ -50,7 +50,7 @@ var Colors = fyne.NewStaticResource("Colors", embedColors)
 var embedColorWheel []byte
 var ColorWheel = fyne.NewStaticResource("ColorWheel", embedColorWheel)
 
-//go:embed dragon1.jpeg
+//go:embed fire.png
 var embedGoShotIconPng []byte
 var GoShotIconPng = fyne.NewStaticResource("GoShotIconPng", embedGoShotIconPng)
 
