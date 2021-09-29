@@ -108,7 +108,21 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 <img src="image/image-20210929123025162.png" alt="image-20210929123025162" style="zoom:67%;" />
 
+### `V1.0.5`
 
+- 支持指定屏幕截屏
+
+    指定屏幕从序号1开始，比如，需要1时主屏幕，序号二十分屏幕，因为多余两个屏幕的没发验证，目前输入框中限定只能输入1或者2，如果有多余两个屏幕的使用者需要将如下代码中正则匹配放开限制，比如将[1,2] – > [1-3]支持3号屏幕
+
+    ```go
+    selectEntry.Validator = validation.NewRegexp(`[1,2]`, "1 or 2 screen")
+    ```
+
+    <img src="image/image-20210930002531279.png" alt="image-20210930002531279" style="zoom:33%;" />
+
+目前当输入屏幕序号大于3时将报错
+
+<img src="image/image-20210930002601316.png" alt="image-20210930002601316" style="zoom:33%;" />
 
 ## 加入我们
 
@@ -121,7 +135,8 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 - [x] 支持中文
 - [x] 支持直线绘制
 - [x] 支持等宽直线绘制
-- [ ] 支持叠加中文文本
+- [x] 支持指定需要截屏的屏幕
+- [x] 支持叠加中文文本
 - [ ] 支持虚线绘制
 - [ ] 支持矩形框功能
 - [ ] 支持鼠标截图功能
