@@ -34,6 +34,8 @@ type FireShotGO struct {
 	// Fyne: Application and Window
 	App fyne.App
 	Win fyne.Window // Main window.
+	// topLevel 备份top层的窗口，用于更改主题一类的刷新使用
+	TopLevelContainer fyne.Container
 
 	// Original screenshot information
 	OriginalScreenshot *image.RGBA
@@ -63,6 +65,8 @@ type FireShotGO struct {
 	gDriveNumShared int
 	// 记录当前需要截取那个屏幕,默认情况下是0
 	displayIndex int
+	// 当前系统字体大小
+	fireShotGoFont FireShotFont
 }
 
 type ImageFilter interface {
@@ -539,4 +543,9 @@ func (gs *FireShotGO) DelayedScreenshot(seconds int) {
 		gs.viewPort.Refresh()
 		gs.miniMap.Refresh()
 	}()
+}
+
+
+func (gs *FireShotGO) GetStatusHandle() (status *widget.Label) {
+	return gs.status
 }

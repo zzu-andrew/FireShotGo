@@ -9,6 +9,8 @@ import (
 
 // ShanGShouJianSongTheme 设置自定义主题，主要用于支持中文
 type ShanGShouJianSongTheme struct {
+	RefThemeApp fyne.App
+	FireFontSizeName string
 }
 
 // ShangShouJianSongXianXiTi 1. 第一种方式
@@ -24,7 +26,7 @@ var resourceShangShouJianSongXianXiTi2Ttf = &fyne.StaticResource{
 }
 
 // Font 返回的就是字体名
-func (m *ShanGShouJianSongTheme) Font(s fyne.TextStyle) fyne.Resource {
+func (sm *ShanGShouJianSongTheme) Font(s fyne.TextStyle) fyne.Resource {
 
 	// 因为在裁剪的主题中指定了font这里不能再对类型判断，全部按照中文显示
 	//if s.Monospace || s.Bold ||  s.Italic {
@@ -42,6 +44,16 @@ func (*ShanGShouJianSongTheme) Icon(n fyne.ThemeIconName) fyne.Resource {
 	return theme.DefaultTheme().Icon(n)
 }
 
-func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
+func (sm *ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
+
+	fs := sm.RefThemeApp.Preferences().Int(sm.FireFontSizeName)
+	if fs == 0 {
+		fs = 12
+	}
+
+	if n == theme.SizeNameText {
+		return float32(fs)
+	}
+
 	return theme.DefaultTheme().Size(n)
 }

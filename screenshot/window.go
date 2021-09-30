@@ -19,7 +19,7 @@ import (
 
 func (gs *FireShotGO) BuildEditWindow() {
 	// 设置主题支持中文
-	gs.App.Settings().SetTheme(&firetheme.ShanGShouJianSongTheme{})
+	gs.App.Settings().SetTheme(&firetheme.ShanGShouJianSongTheme{RefThemeApp: gs.App, FireFontSizeName: FireShotFontSize})
 
 	gs.Win = gs.App.NewWindow(fmt.Sprintf("FireShotGO: screenshot @ %s", gs.ScreenshotTime.Format("2006-01-02 15:04:05")))
 	gs.Win.SetIcon(resources.GoShotIconPng)
@@ -30,6 +30,13 @@ func (gs *FireShotGO) BuildEditWindow() {
 		fyne.NewMenuItem("截屏", func() { gs.DelayedScreenshotForm() }),
 	) // Quit is added automatically.
 
+	menuSet := fyne.NewMenu("编辑",
+		fyne.NewMenuItem("字体大小",
+			func() {
+				gs.fireShotGoFont.FireShotFontEdit(gs)
+		}),
+	)
+
 	menuShare := fyne.NewMenu("共享",
 		fyne.NewMenuItem("复制 (ctrl+c)", func() { gs.CopyImageToClipboard() }),
 		fyne.NewMenuItem("GoogleDrive (ctrl+g)", func() { gs.ShareWithGoogleDrive() }),
@@ -37,7 +44,8 @@ func (gs *FireShotGO) BuildEditWindow() {
 	menuHelp := fyne.NewMenu("帮助",
 		fyne.NewMenuItem("快捷方式 (ctrl+?)", func() { gs.ShowShortcutsPage() }),
 	)
-	mainMenu := fyne.NewMainMenu(menuFile, menuShare, menuHelp)
+	mainMenu := fyne.NewMainMenu(menuFile, menuSet, menuShare, menuHelp)
+
 	gs.Win.SetMainMenu(mainMenu)
 
 	// Image canvas.
