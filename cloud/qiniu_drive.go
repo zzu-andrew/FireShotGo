@@ -3,7 +3,6 @@ package cloud
 import (
 	osbytes "bytes"
 	"context"
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/sms/bytes"
@@ -21,11 +20,7 @@ type MyPutRet struct {
 	Name   string
 }
 
-/*
-accessKey := "wherJEbPJEB4ugd8i_NYiaX-tRgdpWmC7WiYfuiS"
-secretKey := "YCVc4mDhE0rRLRlf7QH7SiVTdrMiZv2QHtsUf3gD"
-bucket := "godata"
-*/
+// QiNiuManager 七牛云存储管理器
 type QiNiuManager struct {
 	AccessKey string
 	SecretKey string
@@ -45,10 +40,8 @@ func NewQiNiu(accesskey string, secretKey string, bucket string) (*QiNiuManager,
 // QiNiuShareImage 将图片发送到七牛云上，需要传入图片名图片内容，目前仅支持网络浏览友好的png后期有需要可以扩展
 // Beta版本仅支持上传华东地区，其他地区上传有点慢，杭州或者上海这边的上传速度会快一些
 func (qiNiuManager *QiNiuManager) QiNiuShareImage(filename string, img image.Image) error {
-	//accessKey := "wherJEbPJEB4ugd8i_NYiaX-tRgdpWmC7WiYfuiS"
-	//secretKey := "YCVc4mDhE0rRLRlf7QH7SiVTdrMiZv2QHtsUf3gD"
-	//bucket := "godata"
 
+	// bucket 就是个人空间下创建的文件夹
 	putPolicy := storage.PutPolicy{
 		Scope: qiNiuManager.Bucket,
 	}
@@ -88,6 +81,8 @@ func (qiNiuManager *QiNiuManager) QiNiuShareImage(filename string, img image.Ima
 		glog.V(2).Infoln(err.Error())
 		return err
 	}
-	fmt.Println(filename)
+	//fmt.Println(filename)
+	// 记录截取图片的信息
+	glog.V(2).Infoln(ret, filename)
 	return nil
 }

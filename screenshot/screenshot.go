@@ -20,6 +20,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"gitee.com/andrewgithub/FireShotGo/clipboard"
 	"gitee.com/andrewgithub/FireShotGo/cloud"
+	"gitee.com/andrewgithub/FireShotGo/resources"
 	"github.com/golang/glog"
 	"github.com/kbinani/screenshot"
 	"image"
@@ -57,9 +58,12 @@ type FireShotGO struct {
 	// 缩略窗口
 	miniMap        *MiniMap
 
+	// 快捷键展示控件
 	shortcutsDialog         dialog.Dialog
-	// 延时截屏的时候掉用出来，其实是一个表单
+	// 延时截取屏幕的时候掉用出来，其实是一个表单
 	delayedScreenshotDialog dialog.Dialog
+	// 联系我们界面
+	connectUsDialog dialog.Dialog
 
 	// 谷歌云盘
 	gDrive          *cloud.Manager
@@ -70,8 +74,10 @@ type FireShotGO struct {
 	qDriveNumShared int
 	// 七牛云需要支持同步和异步两种方式，这里需要拿到一起创建的七牛云的dialog
 	qNiuDialog dialog.Dialog
+
 	// 记录当前需要截取那个屏幕,默认情况下是0
 	displayIndex int
+
 	// 当前系统字体大小
 	fireShotGoFont FireShotFont
 }
@@ -159,6 +165,7 @@ func (gs *FireShotGO) MakeScreenshot() error {
 	fmt.Println(bounds)
 
 	var err error
+	// 根据指定的bounds信息截取屏幕
 	gs.Screenshot, err = screenshot.CaptureRect(bounds)
 
 	if err != nil {
@@ -193,8 +200,7 @@ func (gs *FireShotGO) FireShotNameByTime() string {
 }
 
 
-// GetColorPreference returns the color set for the given key if it has been set.
-// Otherwise it returns `defaultColor`.
+// GetColorPreference 颜色信息设置，若是环境变量中没有设置就使用默认值
 func (gs *FireShotGO) GetColorPreference(key string, defaultColor color.RGBA) color.RGBA {
 	isSet := gs.App.Preferences().Bool(key)
 	if !isSet {
@@ -354,13 +360,13 @@ func (gs *FireShotGO) ShareWithQiNiuDrive() {
 	if gs.qNiuDialog == nil {
 		items := []*widget.FormItem{
 			widget.NewFormItem("AccessKey", accessEntry),
-			widget.NewFormItem("", widget.NewLabel("Paste below the authorization given by GoogleDrive from the browser")),
+			widget.NewFormItem("", widget.NewLabel("Paste the access key given by qiniu from the browser")),
 			widget.NewFormItem("SecretKey", secretEntry),
-			widget.NewFormItem("", widget.NewLabel("Paste below the authorization given by GoogleDrive from the browser")),
+			widget.NewFormItem("", widget.NewLabel("Paste below the secret key given by qiniu from the browser")),
 			widget.NewFormItem("Bucket", bucketEntry),
-			widget.NewFormItem("", widget.NewLabel("Paste below the authorization given by GoogleDrive from the browser")),
+			widget.NewFormItem("", widget.NewLabel("Paste below the bucket given by qiniu from the browser")),
 		}
-		gs.qNiuDialog = dialog.NewForm("七牛云 ", "确认", "取消", items,
+		gs.qNiuDialog = dialog.NewForm("七牛云 ", "上传", "取消", items,
 			func(ok bool) {
 				if ok {
 					// 该函数，点击确认或者取消之后会调用
@@ -397,7 +403,10 @@ func (gs *FireShotGO) ShareWithQiNiuDrive() {
 					err := gs.qDrive.QiNiuShareImage(fileName, gs.Screenshot)
 					if err != nil {
 						gs.status.SetText(err.Error())
+					} else {
+						gs.status.SetText("图片上传成功 ...")
 					}
+
 				}
 			}, gs.Win)
 	}
@@ -421,7 +430,7 @@ func (gs *FireShotGO) ShareWithGoogleDrive() {
 
 	go func() {
 		if gs.gDrive == nil {
-			// Create cloud.Manager.
+			// 创建云存储管理器.
 			token := gs.App.Preferences().String(GoogleDriveTokenPreference)
 			var err error
 			gs.gDrive, err = cloud.New(ctx, GoogleDrivePath, token,
@@ -571,6 +580,28 @@ func (gs *FireShotGO) ShowShortcutsPage() {
 	gs.shortcutsDialog.Resize(size)
 	gs.shortcutsDialog.Show()
 }
+
+func (gs *FireShotGO) ConnectUsPage() {
+
+	// TODO: 支持展示多个网格形状图片
+	if gs.connectUsDialog == nil {
+		weChatImage := canvas.NewImageFromResource(resources.WeChat)
+		weChatContainer := container.NewScroll(weChatImage)
+		weChatContainer.Resize(fyne.NewSize(420, 420))
+
+		gs.connectUsDialog = dialog.NewCustom("FireShotGO", "确认",
+			weChatContainer,
+			gs.Win)
+
+	}
+
+	size := gs.Win.Canvas().Size()
+	size.Width *= 0.80
+	size.Height *= 0.80
+	gs.connectUsDialog.Resize(size)
+	gs.connectUsDialog.Show()
+}
+
 
 const DelayTimePreference = "DelayTime"
 const SelectScreenIndex = "SelectScreen"

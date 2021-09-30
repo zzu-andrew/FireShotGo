@@ -39,11 +39,10 @@ type ViewPort struct {
 	// Thickness 存储绘制直线等元素的宽度元素.
 	Thickness float64
 
-	// DrawingColor is used on all new drawing operation. BackgroundColor is used
-	// for the background of text.
+	// DrawingColor 绘制图形的颜色信息. BackgroundColor text文本的背景颜色信息
 	DrawingColor, BackgroundColor color.Color
 
-	// FontSize is the last used font size.
+	// FontSize 字体的大小
 	FontSize float64
 
 	// Are of the screenshot that is visible in the current window: these are the start (viewX, viewY)
@@ -54,6 +53,7 @@ type ViewPort struct {
 	minSize fyne.Size
 	raster  *canvas.Raster
 
+	// 鼠标后面跟随的图标
 	cursor                                            *canvas.Image
 	cursorCropTopLeft, cursorCropBottomRight          *canvas.Image
 
@@ -63,7 +63,9 @@ type ViewPort struct {
 	cursorDrawText *canvas.Image
 	cursorDrawLine *canvas.Image
 
-	mouseIn         bool // Whether the mouse is over ViewPort.
+	// 鼠标是否在视图窗口上
+	mouseIn         bool
+	// 鼠标移动位置记录
 	mouseMoveEvents chan fyne.Position
 
 	// Cache image for current dimensions/zoom/translation.
@@ -111,6 +113,7 @@ var (
 	_             = desktop.Hoverable(vpPlaceholder)
 )
 
+// NewViewPort 视窗，放置需要编辑的视图
 func NewViewPort(gs *FireShotGO) (vp *ViewPort) {
 	prefOrFloat := func(pref string, defaultValue float64) (value float64) {
 		value = gs.App.Preferences().Float(pref)
@@ -129,12 +132,14 @@ func NewViewPort(gs *FireShotGO) (vp *ViewPort) {
 		cursorDrawArrow:       canvas.NewImageFromResource(resources.DrawArrow),
 		cursorDrawText:        canvas.NewImageFromResource(resources.DrawText),
 		cursorDrawLine:        canvas.NewImageFromResource(resources.DrawLine),
-
+		// 记录鼠标位置信息
 		mouseMoveEvents:       make(chan fyne.Position, 1000),
 
+		// 如果系统变量没有设置就使用默认值，字体大小
 		FontSize:  prefOrFloat(FontSizePreference, 16*float64(gs.Win.Canvas().Scale())),
+		// 线条宽度，用于绘制线条的时候使用
 		Thickness: prefOrFloat(ThicknessPreference, 3.0),
-
+		// 绘制的颜色
 		DrawingColor:    gs.GetColorPreference(DrawingColorPreference, Red),
 		BackgroundColor: gs.GetColorPreference(BackgroundColorPreference, Transparent),
 	}
@@ -558,11 +563,9 @@ func (vp *ViewPort) processMouseMoveEvent(pos fyne.Position) {
 	}
 }
 
-// consumeMouseMoveEvents runs on a separate GoRoutine and
-// drains the mouse movement events before acting on the
-// last of them.
+// consumeMouseMoveEvents 等待鼠标事件并处理
 func (vp *ViewPort) consumeMouseMoveEvents() {
-	// vp.mouseMoveEvents is only closed if app is exiting.
+	// vp.mouseMoveEvents 只有进程退出该GoRoutine才会退出
 	for {
 		// Wait for something to happen.
 		ev, ok := <-vp.mouseMoveEvents

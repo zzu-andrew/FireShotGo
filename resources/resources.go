@@ -54,3 +54,8 @@ var GoShotIconPng = fyne.NewStaticResource("GoShotIconPng", embedGoShotIconPng)
 //go:embed fire.png
 var embedGoShotIconIco []byte
 var GoShotIconIco = fyne.NewStaticResource("GoShotIconIco", embedGoShotIconIco)
+
+//go:embed weixin.png
+var weChatPic []byte
+var WeChat = fyne.NewStaticResource("GoShotIconIco", weChatPic)
+

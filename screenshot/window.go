@@ -24,32 +24,10 @@ func (gs *FireShotGO) BuildEditWindow() {
 	gs.Win = gs.App.NewWindow(fmt.Sprintf("FireShotGO: screenshot @ %s", gs.ScreenshotTime.Format("2006-01-02 15:04:05")))
 	gs.Win.SetIcon(resources.GoShotIconPng)
 
-	// 构建菜单
-	menuFile := fyne.NewMenu("文件",
-		fyne.NewMenuItem("保存 (ctrl+s)", func() { gs.SaveImage() }),
-		fyne.NewMenuItem("截屏", func() { gs.DelayedScreenshotForm() }),
-	) // Quit is added automatically.
+	// 创建菜单栏
+	gs.Win.SetMainMenu(gs.MakeFireShotMenu())
 
-	menuSet := fyne.NewMenu("编辑",
-		fyne.NewMenuItem("字体大小",
-			func() {
-				gs.fireShotGoFont.FireShotFontEdit(gs)
-		}),
-		fyne.NewMenuItem("复制 (ctrl+c)", func() { gs.CopyImageToClipboard() }),
-	)
-
-	menuShare := fyne.NewMenu("云存储",
-		fyne.NewMenuItem("谷歌云 (ctrl+g)", func() { gs.ShareWithGoogleDrive() }),
-		fyne.NewMenuItem("七牛云 ", func() { gs.ShareWithQiNiuDrive() }),
-	)
-	menuHelp := fyne.NewMenu("帮助",
-		fyne.NewMenuItem("快捷方式 (ctrl+?)", func() { gs.ShowShortcutsPage() }),
-	)
-	mainMenu := fyne.NewMainMenu(menuFile, menuSet, menuShare, menuHelp)
-
-	gs.Win.SetMainMenu(mainMenu)
-
-	// Image canvas.
+	// 截屏图片操作视窗.
 	gs.viewPort = NewViewPort(gs)
 
 	// Side toolbar.
@@ -177,3 +155,36 @@ func (gs *FireShotGO) colorPicker() {
 		gs.Win)
 	picker.Show()
 }
+
+// MakeFireShotMenu 创建FireShotGo菜单栏
+func (gs *FireShotGO) MakeFireShotMenu() *fyne.MainMenu{
+	// 构建文件菜单
+	menuFile := fyne.NewMenu("文件",
+		fyne.NewMenuItem("保存 (ctrl+s)", func() { gs.SaveImage() }),
+		fyne.NewMenuItem("截屏", func() { gs.DelayedScreenshotForm() }),
+	) // Quit is added automatically.
+
+	// 构建编辑菜单
+	menuSet := fyne.NewMenu("编辑",
+		fyne.NewMenuItem("字体大小",
+			func() {
+				gs.fireShotGoFont.FireShotFontEdit(gs)
+			}),
+		fyne.NewMenuItem("复制 (ctrl+c)", func() { gs.CopyImageToClipboard() }),
+	)
+
+	// 构建云存储菜单
+	menuShare := fyne.NewMenu("云存储",
+		fyne.NewMenuItem("谷歌云 (ctrl+g)", func() { gs.ShareWithGoogleDrive() }),
+		fyne.NewMenuItem("七牛云 ", func() { gs.ShareWithQiNiuDrive() }),
+	)
+
+	// 构建帮助菜单
+	menuHelp := fyne.NewMenu("帮助",
+		fyne.NewMenuItem("快捷方式 (ctrl+?)", func() { gs.ShowShortcutsPage() }),
+		fyne.NewMenuItem("联系我们 ", func() { gs.ConnectUsPage() }),
+	)
+	return fyne.NewMainMenu(menuFile, menuSet, menuShare, menuHelp)
+
+}
+
