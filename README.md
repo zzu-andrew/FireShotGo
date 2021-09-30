@@ -124,6 +124,12 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 <img src="image/image-20210930002601316.png" alt="image-20210930002601316" style="zoom:33%;" />
 
+### `V1.o.6`
+
+支持主题字体设置，但是目前主题字体设置之后，不能动态刷新，需要重启应用程序，目前先支持功能，后期支持动态的更改主题字体大小
+
+<img src="image/image-20210930134847964.png" alt="image-20210930134847964" style="zoom:50%;" />
+
 ## 加入我们
 
 扫描二维码，拉你进入`FireShotGo`开发大家庭，一起学习，一起进步！
@@ -137,6 +143,8 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 - [x] 支持等宽直线绘制
 - [x] 支持指定需要截屏的屏幕
 - [x] 支持叠加中文文本
+- [x] 支持对主题字体设置
+- [ ] 主题字体支持动态更改
 - [ ] 支持虚线绘制
 - [ ] 支持矩形框功能
 - [ ] 支持鼠标截图功能
