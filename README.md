@@ -10,6 +10,10 @@
 
 对于`Fyne`陌生的同学可以参考 [`fyne club`](https://gitee.com/andrewgithub/fyne-club)上面已经实现了详细的文档和对应每小节对应的源码
 
+在线文档点击：[`FireShotGoDoc`](https://pkg.go.dev/gitee.com/andrewgithub/FireShotGo)
+
+ 分部详细教程：[`fyne club`](https://gitee.com/andrewgithub/fyne-club)
+
 ## 安装信息
 
 ### Linux

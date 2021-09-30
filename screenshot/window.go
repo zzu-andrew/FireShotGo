@@ -40,7 +40,7 @@ func (gs *FireShotGO) BuildEditWindow() {
 
 	menuShare := fyne.NewMenu("云存储",
 		fyne.NewMenuItem("谷歌云 (ctrl+g)", func() { gs.ShareWithGoogleDrive() }),
-		fyne.NewMenuItem("七牛云 (ctrl+g)", func() { gs.ShareWithQiNiuDrive() }),
+		fyne.NewMenuItem("七牛云 ", func() { gs.ShareWithQiNiuDrive() }),
 	)
 	menuHelp := fyne.NewMenu("帮助",
 		fyne.NewMenuItem("快捷方式 (ctrl+?)", func() { gs.ShowShortcutsPage() }),

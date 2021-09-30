@@ -60,9 +60,14 @@ type FireShotGO struct {
 	// 延时截屏的时候掉用出来，其实是一个表单
 	delayedScreenshotDialog dialog.Dialog
 
-	// GoogleDrive manager
+	// 谷歌云盘
 	gDrive          *cloud.Manager
 	gDriveNumShared int
+
+	// 七牛云
+	qDrive          *cloud.QiNiuManager
+	qDriveNumShared int
+
 	// 记录当前需要截取那个屏幕,默认情况下是0
 	displayIndex int
 	// 当前系统字体大小
@@ -280,12 +285,44 @@ func (gs *FireShotGO) ShareWithQiNiuDrive() {
 
 	gs.status.SetText("开始连接谷歌云盘 ...")
 	fileName := gs.DefaultName()
-	gs.gDriveNumShared++
-	if gs.gDriveNumShared > 1 {
-		// In case the screenshot is shared multiple times (after different editions), we want
-		// a different name for each.
-		fileName = fmt.Sprintf("%s_%d", fileName, gs.gDriveNumShared)
+	gs.qDriveNumShared ++
+	if gs.qDriveNumShared > 1 {
+		// 每次图片的名称要递增
+		fileName = fmt.Sprintf("%s_%d", fileName, gs.qDriveNumShared)
 	}
+
+	// 采用异步上传方式进行图片上传
+	go func() {
+		// 若是以前没有创建过七牛云，在这里创建
+		if gs.qDrive == nil {
+			// 创建管理对象
+			accesskey := gs.App.Preferences().Int(SelectScreenIndex)
+			if len(accesskey)
+
+
+			gs.qDrive, _ = cloud.NewQiNiu("", "", "")
+
+			a := widget.NewEntry()
+			textEntry.Resize(fyne.NewSize(400, 40))
+			items := []*widget.FormItem{
+				widget.NewFormItem("Authorization", textEntry),
+				widget.NewFormItem("", widget.NewLabel("Paste below the authorization given by GoogleDrive from the browser")),
+			}
+			form := dialog.NewForm("Google Drive Authorization", "Ok", "Cancel", items,
+				func(confirm bool) {
+					if confirm {
+						replyChan <- textEntry.Text
+					} else {
+						replyChan <- ""
+					}
+				}, gs.Win)
+			form.Resize(fyne.NewSize(500, 300))
+			form.Show()
+			gs.Win.Canvas().Focus(textEntry)
+		}
+	}()
+
+
 
 	go func() {
 		if gs.gDrive == nil {

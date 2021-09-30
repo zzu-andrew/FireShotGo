@@ -49,6 +49,7 @@ func (ff *FireShotFont) FireShotFontEdit(gs *FireShotGO) {
 			[]*widget.FormItem{
 				widget.NewFormItem("输入字体大小 ",
 					fontEntry),
+				widget.NewFormItem("", widget.NewLabel("输入之后需要重启生效，目前不支持动态更改！")),
 			},
 			func(ok bool) {
 				if ok {
