@@ -7,6 +7,7 @@ package screenshot
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -68,7 +69,7 @@ type FireShotGO struct {
 	qDrive          *cloud.QiNiuManager
 	qDriveNumShared int
 	// 七牛云需要支持同步和异步两种方式，这里需要拿到一起创建的七牛云的dialog
-
+	qNiuDialog dialog.Dialog
 	// 记录当前需要截取那个屏幕,默认情况下是0
 	displayIndex int
 	// 当前系统字体大小
@@ -184,6 +185,13 @@ func (gs *FireShotGO) DefaultName() string {
 	return fmt.Sprintf("Screenshot %s",
 		gs.ScreenshotTime.Format("2006-01-02 15-04-02"))
 }
+func (gs *FireShotGO) FireShotNameByTime() string {
+	timestamp := time.Now().Unix()
+	tm := time.Unix(timestamp, 0)
+
+	return tm.Format("2006-01-02 03:04:05 PM")
+}
+
 
 // GetColorPreference returns the color set for the given key if it has been set.
 // Otherwise it returns `defaultColor`.
@@ -286,51 +294,116 @@ var (
 func (gs *FireShotGO) ShareWithQiNiuDrive() {
 	glog.V(2).Infof("FireShotGO.ShareWithQiNiuDrive")
 
-	gs.status.SetText("开始连接谷歌云盘 ...")
-	fileName := gs.DefaultName()
-	gs.qDriveNumShared ++
-	if gs.qDriveNumShared > 1 {
-		// 每次图片的名称要递增
-		fileName = fmt.Sprintf("%s_%d", fileName, gs.qDriveNumShared)
+	gs.status.SetText("开始连接七牛云盘 ...")
+	// 采用异步上传方式进行图片上传
+	// 获取用户信息
+	accessEntry := widget.NewEntry()
+	// 因为认证消息的字符可能性很多这里不进行检验
+	accessEntry.Validator = func(text string) error {
+		if len(text) > 100 {
+			return errors.New("access text is too long")
+		}
+		return nil
+	}
+	// 获取系统默认变量
+	qiNiuAccessConfig := gs.App.Preferences().String(QiNiuAccessKey)
+	// 这里设置预写字段
+	accessEntry.SetText(qiNiuAccessConfig)
+	// 在写占位符，占位符使用历史记录的内容，用于提示用户怎样书写
+	accessEntry.SetPlaceHolder(qiNiuAccessConfig)
+	accessEntry.Resize(fyne.NewSize(400, 40))
+
+	// 获取用户信息
+	secretEntry := widget.NewEntry()
+	// 因为认证消息的字符可能性很多这里不进行检验
+	secretEntry.Validator = func(text string) error {
+		if len(text) > 100 {
+			return errors.New("access text is too long")
+		}
+		return nil
+	}
+	// 获取系统默认变量
+	qiNiuSecretConfig := gs.App.Preferences().String(QiNiuSecretKey)
+	// 这里设置预写字段
+	secretEntry.SetText(qiNiuSecretConfig)
+	// 在写占位符，占位符使用历史记录的内容，用于提示用户怎样书写
+	secretEntry.SetPlaceHolder(qiNiuSecretConfig)
+	secretEntry.Resize(fyne.NewSize(400, 40))
+
+	// 获取用户信息
+	bucketEntry := widget.NewEntry()
+	// 因为认证消息的字符可能性很多这里不进行检验
+	bucketEntry.Validator = func(text string) error {
+		if len(text) > 100 {
+			return errors.New("access text is too long")
+		}
+		return nil
+	}
+	// 获取系统默认变量
+	qiNiuBucketConfig := gs.App.Preferences().String(QiNiuBucket)
+	// 这里设置预写字段
+	bucketEntry.SetText(qiNiuBucketConfig)
+	// 在写占位符，占位符使用历史记录的内容，用于提示用户怎样书写
+	bucketEntry.SetPlaceHolder(qiNiuBucketConfig)
+	bucketEntry.Resize(fyne.NewSize(400, 40))
+
+	if gs.qDrive == nil {
+		gs.qDrive, _ = cloud.NewQiNiu("", "", "")
 	}
 
-	// 采用异步上传方式进行图片上传
-	go func() {
-		// 若是以前没有创建过七牛云，在这里创建
-		if gs.qDrive == nil {
-			// 创建 dialog 用于获取用户信息.
-			accessEntry := widget.NewEntry()
-			accessEntry.Resize(fyne.NewSize(400, 40))
-			items := []*widget.FormItem{
-				widget.NewFormItem("Access", accessEntry),
-				widget.NewFormItem("", widget.NewLabel("Paste below the authorization given by GoogleDrive from the browser")),
-			}
-
-			form := dialog.NewForm("七牛云 ", "确认", "取消", items,
-				func(ok bool) {
-					if ok {
-
-					}
-				}, gs.Win)
-			form.Resize(fyne.NewSize(500, 300))
-			form.Show()
-			gs.Win.Canvas().Focus(accessEntry)
-
-			// 到这里如果用户没有输入信息，就采用从配置参数中获取的值
-
-			accesskey := gs.App.Preferences().String(QiNiuAccessKey)
-			if len(accesskey) == 0 {
-				glog.V(2).Infoln("QiNiuAccessKey is not set")
-			}
-			// 创建管理对象
-			gs.qDrive, _ = cloud.NewQiNiu("", "", "")
-
-			_ = gs.qDrive.QiNiuShareImage(fileName, gs.Screenshot)
-
-			form.Resize(fyne.NewSize(500, 300))
-			form.Show()
+	if gs.qNiuDialog == nil {
+		items := []*widget.FormItem{
+			widget.NewFormItem("AccessKey", accessEntry),
+			widget.NewFormItem("", widget.NewLabel("Paste below the authorization given by GoogleDrive from the browser")),
+			widget.NewFormItem("SecretKey", secretEntry),
+			widget.NewFormItem("", widget.NewLabel("Paste below the authorization given by GoogleDrive from the browser")),
+			widget.NewFormItem("Bucket", bucketEntry),
+			widget.NewFormItem("", widget.NewLabel("Paste below the authorization given by GoogleDrive from the browser")),
 		}
-	}()
+		gs.qNiuDialog = dialog.NewForm("七牛云 ", "确认", "取消", items,
+			func(ok bool) {
+				if ok {
+					// 该函数，点击确认或者取消之后会调用
+					if len(accessEntry.Text) == 0 {
+						gs.status.SetText(fmt.Sprintf("check access enter this may null"))
+						gs.qDrive.AccessKey = qiNiuAccessConfig
+					} else {
+						gs.App.Preferences().SetString(QiNiuAccessKey, accessEntry.Text)
+
+						fmt.Println(gs.App.Preferences().String(QiNiuAccessKey))
+						gs.qDrive.AccessKey = accessEntry.Text
+					}
+
+					if len(secretEntry.Text) == 0 {
+						gs.status.SetText(fmt.Sprintf("check secret enter this may null"))
+						gs.qDrive.SecretKey = qiNiuSecretConfig
+					} else {
+						gs.App.Preferences().SetString(QiNiuSecretKey, secretEntry.Text)
+						gs.qDrive.SecretKey = secretEntry.Text
+					}
+
+					if len(bucketEntry.Text) == 0 {
+						gs.status.SetText(fmt.Sprintf("check bucket enter this may null"))
+						gs.qDrive.Bucket = qiNiuBucketConfig
+					} else {
+						gs.App.Preferences().SetString(QiNiuBucket, bucketEntry.Text)
+						gs.qDrive.Bucket = bucketEntry.Text
+					}
+					// 开始传输操作
+					fileName := gs.FireShotNameByTime()
+					gs.qDriveNumShared ++
+					// 每次图片的名称要递增
+					fileName = fmt.Sprintf("%s_%d.png", fileName, gs.qDriveNumShared)
+					err := gs.qDrive.QiNiuShareImage(fileName, gs.Screenshot)
+					if err != nil {
+						gs.status.SetText(err.Error())
+					}
+				}
+			}, gs.Win)
+	}
+
+	gs.qNiuDialog.Resize(fyne.NewSize(500, 300))
+	gs.qNiuDialog.Show()
 }
 
 func (gs *FireShotGO) ShareWithGoogleDrive() {

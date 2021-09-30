@@ -14,15 +14,16 @@ import (
 type MiniMap struct {
 	widget.BaseWidget
 
-	// Application references.
+	// 截图的全局变量
 	gs *FireShotGO
+	// 视窗
 	vp *ViewPort
 
-	// Fyne/UI related objects.
+	// Fyne 相关的变量
 	minSize      fyne.Size
 	thumbRaster  *canvas.Raster
 	viewPortRect *canvas.Rectangle
-	// Cache image for current dimensions/zoom/translation.
+	// 当前图像缓存 dimensions/zoom/translation.
 	cache *image.RGBA
 
 	// Geometry: changed whenever window changes sizes.
@@ -30,11 +31,11 @@ type MiniMap struct {
 	thumbX, thumbY int     // Start pixel position of thumbnail.
 	thumbW, thumbH int     // Pixel width and height of thumbnail.
 
-	// Dynamic dragging
+	// 拖拽事件
 	dragEvents chan *fyne.DragEvent
 }
 
-// Ensure MiniMap implements the following interfaces.
+// 确保 MiniMap 实现了如下接口
 var (
 	mmPlaceholder = &MiniMap{}
 	_             = fyne.CanvasObject(mmPlaceholder)
@@ -180,14 +181,14 @@ func (mm *MiniMap) Dragged(ev *fyne.DragEvent) {
 func (mm *MiniMap) consumeDragEvents() {
 	var prevPos fyne.Position
 	for done := false; !done; {
-		// Wait for something to happen.
+		// 等待通知，等待事件开始
 		ev, ok := <-mm.dragEvents
 		if !ok {
 			// All done.
 			break
 		}
 
-		// Read all events in channel, until it blocks or is closed.
+		// 读取所有事件，直到通道关闭或者读取完成.
 		consumed := 0
 	drainDragEvents:
 		for {

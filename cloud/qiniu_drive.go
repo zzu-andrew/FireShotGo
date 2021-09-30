@@ -4,6 +4,7 @@ import (
 	osbytes "bytes"
 	"context"
 	"fmt"
+	"github.com/golang/glog"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/sms/bytes"
 	"github.com/qiniu/go-sdk/v7/storage"
@@ -43,15 +44,16 @@ func NewQiNiu(accesskey string, secretKey string, bucket string) (*QiNiuManager,
 
 // QiNiuShareImage 将图片发送到七牛云上，需要传入图片名图片内容，目前仅支持网络浏览友好的png后期有需要可以扩展
 // Beta版本仅支持上传华东地区，其他地区上传有点慢，杭州或者上海这边的上传速度会快一些
-func (qiNiuManager *QiNiuManager) QiNiuShareImage(name string, img image.Image) error {
-	accessKey := "wherJEbPJEB4ugd8i_NYiaX-tRgdpWmC7WiYfuiS"
-	secretKey := "YCVc4mDhE0rRLRlf7QH7SiVTdrMiZv2QHtsUf3gD"
-	bucket := "godata"
+func (qiNiuManager *QiNiuManager) QiNiuShareImage(filename string, img image.Image) error {
+	//accessKey := "wherJEbPJEB4ugd8i_NYiaX-tRgdpWmC7WiYfuiS"
+	//secretKey := "YCVc4mDhE0rRLRlf7QH7SiVTdrMiZv2QHtsUf3gD"
+	//bucket := "godata"
 
 	putPolicy := storage.PutPolicy{
-		Scope: bucket,
+		Scope: qiNiuManager.Bucket,
 	}
-	mac := qbox.NewMac(accessKey, secretKey)
+
+	mac := qbox.NewMac(qiNiuManager.AccessKey, qiNiuManager.SecretKey)
 	upToken := putPolicy.UploadToken(mac)
 
 	cfg := storage.Config{}
@@ -81,12 +83,11 @@ func (qiNiuManager *QiNiuManager) QiNiuShareImage(name string, img image.Image) 
 	dataLen := int64(len(content))
 
 	// key文件名称
-	err := formUploader.Put(context.Background(), &ret, upToken, "data.png", bytes.NewReader(content), dataLen, &putExtra)
+	err := formUploader.Put(context.Background(), &ret, upToken, filename, bytes.NewReader(content), dataLen, &putExtra)
 	if err != nil {
-		fmt.Println(err)
+		glog.V(2).Infoln(err.Error())
 		return err
 	}
-	fmt.Println(ret.Key, ret.Hash)
-
+	fmt.Println(filename)
 	return nil
 }

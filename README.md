@@ -128,11 +128,23 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 <img src="image/image-20210930002601316.png" alt="image-20210930002601316" style="zoom:33%;" />
 
-### `V1.o.6`
+### `V1.0.6`
 
 支持主题字体设置，但是目前主题字体设置之后，不能动态刷新，需要重启应用程序，目前先支持功能，后期支持动态的更改主题字体大小
 
 <img src="image/image-20210930134847964.png" alt="image-20210930134847964" style="zoom:50%;" />
+
+### `V1.0.7`
+
+支持云存储，谷歌云和七牛云，事实截取图片，实时上传图片，目前仅支持png图片后期放开图片类型的选择，可以支持多种图片编码格式
+
+支持七牛云，让截取的图片直接上上云，随时截取，随时保存到云盘，方便后期查看于信息记录记录
+
+<img src="image/image-20210930175523422.png" alt="image-20210930175523422" style="zoom:50%;" />
+
+<img src="image/image-20210930175745365.png" alt="image-20210930175745365" style="zoom:50%;" />
+
+
 
 ## 加入我们
 
@@ -148,6 +160,7 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 - [x] 支持指定需要截屏的屏幕
 - [x] 支持叠加中文文本
 - [x] 支持对主题字体设置
+- [x] 支持云存储-谷歌云、七牛云
 - [ ] 主题字体支持动态更改
 - [ ] 支持虚线绘制
 - [ ] 支持矩形框功能
