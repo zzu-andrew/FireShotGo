@@ -18,7 +18,7 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 	"gitee.com/andrewgithub/FireShotGo/clipboard"
-	"gitee.com/andrewgithub/FireShotGo/googledrive"
+	"gitee.com/andrewgithub/FireShotGo/cloud"
 	"github.com/golang/glog"
 	"github.com/kbinani/screenshot"
 	"image"
@@ -61,7 +61,7 @@ type FireShotGO struct {
 	delayedScreenshotDialog dialog.Dialog
 
 	// GoogleDrive manager
-	gDrive          *googledrive.Manager
+	gDrive          *cloud.Manager
 	gDriveNumShared int
 	// 记录当前需要截取那个屏幕,默认情况下是0
 	displayIndex int
@@ -273,11 +273,12 @@ var (
 	GoogleDrivePath = []string{"FireShotGO"}
 )
 
-func (gs *FireShotGO) ShareWithGoogleDrive() {
-	glog.V(2).Infof("FireShotGO.ShareWithGoogleDrive")
+
+func (gs *FireShotGO) ShareWithQiNiuDrive() {
+	glog.V(2).Infof("FireShotGO.ShareWithQiNiuDrive")
 	ctx := context.Background()
 
-	gs.status.SetText("Connecting to GoogleDrive ...")
+	gs.status.SetText("开始连接谷歌云盘 ...")
 	fileName := gs.DefaultName()
 	gs.gDriveNumShared++
 	if gs.gDriveNumShared > 1 {
@@ -288,10 +289,58 @@ func (gs *FireShotGO) ShareWithGoogleDrive() {
 
 	go func() {
 		if gs.gDrive == nil {
-			// Create googledrive.Manager.
+			// Create cloud.Manager.
 			token := gs.App.Preferences().String(GoogleDriveTokenPreference)
 			var err error
-			gs.gDrive, err = googledrive.New(ctx, GoogleDrivePath, token,
+			gs.gDrive, err = cloud.New(ctx, GoogleDrivePath, token,
+				func(token string) { gs.App.Preferences().SetString(GoogleDriveTokenPreference, token) },
+				gs.askForGoogleDriveAuthorization)
+			if err != nil {
+				glog.Errorf("Failed to connect to Google Drive: %s", err)
+				gs.status.SetText(fmt.Sprintf("GoogleDrive failed: %v", err))
+				return
+			}
+		}
+
+		// Sharing the image must happen in a separate goroutine because the UI must
+		// remain interactive, also in order to capture the authorization input
+		// from the user.
+		url, err := gs.gDrive.ShareImage(ctx, fileName, gs.Screenshot)
+		if err != nil {
+			glog.Errorf("Failed to share image in Google Drive: %s", err)
+			gs.status.SetText(fmt.Sprintf("GoogleDrive failed: %v", err))
+			return
+		}
+		glog.Infof("GoogleDrive's shared URL:\t%s", url)
+		err = clipboard.CopyText(url)
+		if err == nil {
+			gs.status.SetText("Image shared in GoogleDrive, URL copied to clipboard.")
+		} else {
+			gs.status.SetText("Image shared in GoogleDrive, but failed to copy to clipboard, see URL and error in the logs.")
+			glog.Errorf("Failed to copy URL to clipboard: %v", err)
+		}
+	}()
+}
+
+func (gs *FireShotGO) ShareWithGoogleDrive() {
+	glog.V(2).Infof("FireShotGO.ShareWithGoogleDrive")
+	ctx := context.Background()
+
+	gs.status.SetText("开始连接谷歌云盘 ...")
+	fileName := gs.DefaultName()
+	gs.gDriveNumShared++
+	if gs.gDriveNumShared > 1 {
+		// In case the screenshot is shared multiple times (after different editions), we want
+		// a different name for each.
+		fileName = fmt.Sprintf("%s_%d", fileName, gs.gDriveNumShared)
+	}
+
+	go func() {
+		if gs.gDrive == nil {
+			// Create cloud.Manager.
+			token := gs.App.Preferences().String(GoogleDriveTokenPreference)
+			var err error
+			gs.gDrive, err = cloud.New(ctx, GoogleDrivePath, token,
 				func(token string) { gs.App.Preferences().SetString(GoogleDriveTokenPreference, token) },
 				gs.askForGoogleDriveAuthorization)
 			if err != nil {

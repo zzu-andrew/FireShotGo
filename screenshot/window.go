@@ -35,11 +35,12 @@ func (gs *FireShotGO) BuildEditWindow() {
 			func() {
 				gs.fireShotGoFont.FireShotFontEdit(gs)
 		}),
+		fyne.NewMenuItem("复制 (ctrl+c)", func() { gs.CopyImageToClipboard() }),
 	)
 
-	menuShare := fyne.NewMenu("共享",
-		fyne.NewMenuItem("复制 (ctrl+c)", func() { gs.CopyImageToClipboard() }),
-		fyne.NewMenuItem("GoogleDrive (ctrl+g)", func() { gs.ShareWithGoogleDrive() }),
+	menuShare := fyne.NewMenu("云存储",
+		fyne.NewMenuItem("谷歌云 (ctrl+g)", func() { gs.ShareWithGoogleDrive() }),
+		fyne.NewMenuItem("七牛云 (ctrl+g)", func() { gs.ShareWithQiNiuDrive() }),
 	)
 	menuHelp := fyne.NewMenu("帮助",
 		fyne.NewMenuItem("快捷方式 (ctrl+?)", func() { gs.ShowShortcutsPage() }),
