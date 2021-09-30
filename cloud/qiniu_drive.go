@@ -1,14 +1,14 @@
 package cloud
 
 import (
-	"bufio"
+	osbytes "bytes"
 	"context"
 	"fmt"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/sms/bytes"
 	"github.com/qiniu/go-sdk/v7/storage"
 	"image"
-	"os"
+	"image/png"
 )
 
 // MyPutRet 自定义返回值结构体
@@ -20,7 +20,6 @@ type MyPutRet struct {
 	Name   string
 }
 
-
 /*
 accessKey := "wherJEbPJEB4ugd8i_NYiaX-tRgdpWmC7WiYfuiS"
 secretKey := "YCVc4mDhE0rRLRlf7QH7SiVTdrMiZv2QHtsUf3gD"
@@ -29,7 +28,7 @@ bucket := "godata"
 type QiNiuManager struct {
 	AccessKey string
 	SecretKey string
-	Bucket string
+	Bucket    string
 }
 
 func NewQiNiu(accesskey string, secretKey string, bucket string) (*QiNiuManager, error) {
@@ -37,20 +36,20 @@ func NewQiNiu(accesskey string, secretKey string, bucket string) (*QiNiuManager,
 	m := &QiNiuManager{
 		AccessKey: accesskey,
 		SecretKey: secretKey,
-		Bucket: bucket,
+		Bucket:    bucket,
 	}
 	return m, nil
 }
 
 // QiNiuShareImage 将图片发送到七牛云上，需要传入图片名图片内容，目前仅支持网络浏览友好的png后期有需要可以扩展
 // Beta版本仅支持上传华东地区，其他地区上传有点慢，杭州或者上海这边的上传速度会快一些
-func (qiNiuManager *QiNiuManager)QiNiuShareImage(name string, img image.Image) error {
+func (qiNiuManager *QiNiuManager) QiNiuShareImage(name string, img image.Image) error {
 	accessKey := "wherJEbPJEB4ugd8i_NYiaX-tRgdpWmC7WiYfuiS"
 	secretKey := "YCVc4mDhE0rRLRlf7QH7SiVTdrMiZv2QHtsUf3gD"
 	bucket := "godata"
 
 	putPolicy := storage.PutPolicy{
-		Scope:               bucket,
+		Scope: bucket,
 	}
 	mac := qbox.NewMac(accessKey, secretKey)
 	upToken := putPolicy.UploadToken(mac)
@@ -74,11 +73,15 @@ func (qiNiuManager *QiNiuManager)QiNiuShareImage(name string, img image.Image) e
 		},
 	}
 
-	data := []byte("hello, this is qiniu cloud")
-	dataLen := int64(len(data))
+	// Create PNG content of the image.
+	var contentBuffer osbytes.Buffer
+	_ = png.Encode(&contentBuffer, img)
+	content := contentBuffer.Bytes()
+
+	dataLen := int64(len(content))
 
 	// key文件名称
-	err := formUploader.Put(context.Background(), &ret, upToken, "key", bytes.NewReader(data), dataLen, &putExtra)
+	err := formUploader.Put(context.Background(), &ret, upToken, "data.png", bytes.NewReader(content), dataLen, &putExtra)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -86,14 +89,4 @@ func (qiNiuManager *QiNiuManager)QiNiuShareImage(name string, img image.Image) e
 	fmt.Println(ret.Key, ret.Hash)
 
 	return nil
-}
-
-
-func decode(filename string) (image.Image, string, error) {
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, "", err
-	}
-	defer f.Close()
-	return image.Decode(bufio.NewReader(f))
 }

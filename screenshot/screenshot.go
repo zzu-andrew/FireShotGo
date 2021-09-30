@@ -67,6 +67,7 @@ type FireShotGO struct {
 	// 七牛云
 	qDrive          *cloud.QiNiuManager
 	qDriveNumShared int
+	// 七牛云需要支持同步和异步两种方式，这里需要拿到一起创建的七牛云的dialog
 
 	// 记录当前需要截取那个屏幕,默认情况下是0
 	displayIndex int
@@ -272,6 +273,9 @@ func (gs *FireShotGO) CopyImageToClipboard() {
 
 const (
 	GoogleDriveTokenPreference = "google_drive_token"
+	QiNiuAccessKey = "qiNiuAccessKey"
+	QiNiuSecretKey = "qiNiuSecretKey"
+	QiNiuBucket = "qiNiuBucket"
 )
 
 var (
@@ -281,7 +285,6 @@ var (
 
 func (gs *FireShotGO) ShareWithQiNiuDrive() {
 	glog.V(2).Infof("FireShotGO.ShareWithQiNiuDrive")
-	ctx := context.Background()
 
 	gs.status.SetText("开始连接谷歌云盘 ...")
 	fileName := gs.DefaultName()
@@ -295,66 +298,37 @@ func (gs *FireShotGO) ShareWithQiNiuDrive() {
 	go func() {
 		// 若是以前没有创建过七牛云，在这里创建
 		if gs.qDrive == nil {
-			// 创建管理对象
-			accesskey := gs.App.Preferences().Int(SelectScreenIndex)
-			if len(accesskey)
-
-
-			gs.qDrive, _ = cloud.NewQiNiu("", "", "")
-
-			a := widget.NewEntry()
-			textEntry.Resize(fyne.NewSize(400, 40))
+			// 创建 dialog 用于获取用户信息.
+			accessEntry := widget.NewEntry()
+			accessEntry.Resize(fyne.NewSize(400, 40))
 			items := []*widget.FormItem{
-				widget.NewFormItem("Authorization", textEntry),
+				widget.NewFormItem("Access", accessEntry),
 				widget.NewFormItem("", widget.NewLabel("Paste below the authorization given by GoogleDrive from the browser")),
 			}
-			form := dialog.NewForm("Google Drive Authorization", "Ok", "Cancel", items,
-				func(confirm bool) {
-					if confirm {
-						replyChan <- textEntry.Text
-					} else {
-						replyChan <- ""
+
+			form := dialog.NewForm("七牛云 ", "确认", "取消", items,
+				func(ok bool) {
+					if ok {
+
 					}
 				}, gs.Win)
 			form.Resize(fyne.NewSize(500, 300))
 			form.Show()
-			gs.Win.Canvas().Focus(textEntry)
-		}
-	}()
+			gs.Win.Canvas().Focus(accessEntry)
 
+			// 到这里如果用户没有输入信息，就采用从配置参数中获取的值
 
-
-	go func() {
-		if gs.gDrive == nil {
-			// Create cloud.Manager.
-			token := gs.App.Preferences().String(GoogleDriveTokenPreference)
-			var err error
-			gs.gDrive, err = cloud.New(ctx, GoogleDrivePath, token,
-				func(token string) { gs.App.Preferences().SetString(GoogleDriveTokenPreference, token) },
-				gs.askForGoogleDriveAuthorization)
-			if err != nil {
-				glog.Errorf("Failed to connect to Google Drive: %s", err)
-				gs.status.SetText(fmt.Sprintf("GoogleDrive failed: %v", err))
-				return
+			accesskey := gs.App.Preferences().String(QiNiuAccessKey)
+			if len(accesskey) == 0 {
+				glog.V(2).Infoln("QiNiuAccessKey is not set")
 			}
-		}
+			// 创建管理对象
+			gs.qDrive, _ = cloud.NewQiNiu("", "", "")
 
-		// Sharing the image must happen in a separate goroutine because the UI must
-		// remain interactive, also in order to capture the authorization input
-		// from the user.
-		url, err := gs.gDrive.ShareImage(ctx, fileName, gs.Screenshot)
-		if err != nil {
-			glog.Errorf("Failed to share image in Google Drive: %s", err)
-			gs.status.SetText(fmt.Sprintf("GoogleDrive failed: %v", err))
-			return
-		}
-		glog.Infof("GoogleDrive's shared URL:\t%s", url)
-		err = clipboard.CopyText(url)
-		if err == nil {
-			gs.status.SetText("Image shared in GoogleDrive, URL copied to clipboard.")
-		} else {
-			gs.status.SetText("Image shared in GoogleDrive, but failed to copy to clipboard, see URL and error in the logs.")
-			glog.Errorf("Failed to copy URL to clipboard: %v", err)
+			_ = gs.qDrive.QiNiuShareImage(fileName, gs.Screenshot)
+
+			form.Resize(fyne.NewSize(500, 300))
+			form.Show()
 		}
 	}()
 }
