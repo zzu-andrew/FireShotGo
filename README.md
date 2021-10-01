@@ -148,6 +148,8 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 ## 加入我们
 
+如果对go语言感兴趣或者想要学习go语言`Fyne` `gui`编程的可以添加微信！
+
 扫描二维码，拉你进入`FireShotGo`开发大家庭，一起学习，一起进步！
 
 ![](image/%E5%BE%AE%E4%BF%A1%E4%BA%8C%E7%BB%B4%E7%A0%81.png)
