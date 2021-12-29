@@ -136,11 +136,12 @@ func Run() {
 	// 里面有详细的go Fyne教程，并且每小节我都实现了对应的源码
 	fireShotGo := &FireShotGO{
 		// 使用给后期需要 独立配置参数的 Fyne需要使用  NewWithID 没有要求的可以使用app.New()
-		// 使用带有ID的new方便后期绑定数据使用
+		// 使用带有ID的new方便后期绑定应用全局数据
 		App: app.NewWithID("FireShotGo"),
 	}
 	// 开始截屏 --
-	if err := fireShotGo.MakeScreenshot(); err != nil {
+	err := fireShotGo.MakeScreenshot()
+	if err != nil {
 		glog.Fatalf("Failed to capture screenshot: %s", err)
 	}
 	// 这里开始构建应用窗口，crete content
@@ -156,18 +157,23 @@ func (gs *FireShotGO) MakeScreenshot() error {
 
 	n := screenshot.NumActiveDisplays()
 	if n != 1 {
-		glog.Warningf("No support for multiple displays yet (should be relatively easy to add), screenshotting first display.")
+		// 已经支持多屏幕截图，这里给出屏幕个数
+		glog.Warningf("检测到用户屏幕个数: %d，请在文件->截屏中配置需要截屏的序号", n)
 	}
 
-	// 后期支持多个屏幕的截图，这里仅支持对首屏幕截图
 	// TODO 支持鼠标绘制之后进行
 	// TODO 支持矩形绘制
-	// TODO 直线的功能
 	// TODO 虚线功能
 
+	if gs.displayIndex < 0 || gs.displayIndex > n {
+		glog.Fatalf("displayIndex 非法请确认")
+	}
+	// 获取当前显示器左上角和右下角的位置信息 eg (0,0) (1920, 1080)
 	bounds := screenshot.GetDisplayBounds(gs.displayIndex)
 
-	fmt.Println(bounds)
+	glog.Infof("截图位置:(%d, %d) -> (%d, %d)",
+		bounds.Min.X, bounds.Min.Y,
+		bounds.Max.X, bounds.Max.Y)
 
 	var err error
 	// 根据指定的bounds信息截取屏幕
