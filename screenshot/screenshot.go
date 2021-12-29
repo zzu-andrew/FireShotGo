@@ -33,33 +33,38 @@ import (
 )
 
 type FireShotGO struct {
-	// Fyne: Application and Window
+	// 应用和窗口
 	App fyne.App
-	Win fyne.Window // Main window.
+	// 主窗口
+	Win fyne.Window
 	// topLevel 备份top层的窗口，用于更改主题一类的刷新使用
 	TopLevelContainer fyne.Container
 
-	// Original screenshot information
+	// 原始截图信息
 	OriginalScreenshot *image.RGBA
-	ScreenshotTime     time.Time
+	// 截图时间记录
+	ScreenshotTime time.Time
 
-	// Edited screenshot
+	// 编辑之后的截图信息
 	Screenshot *image.RGBA // The edited/composed screenshot
 	CropRect   image.Rectangle
 	Filters    []ImageFilter // Configured filters: each filter is one edition to the image.
 
-	// UI elements
+	// UI 元素
+	// zoomEntry 缩放窗口控件 thicknessEntry 设置线条粗细的控件
 	zoomEntry, thicknessEntry *widget.Entry
-	colorSample               *canvas.Rectangle
+	// colorSample 颜色示例窗口
+	colorSample *canvas.Rectangle
 	// 工具左下角显示当前工作状态
-	status         *widget.Label
+	status *widget.Label
+	// 预览窗口
 	viewPort       *ViewPort
 	viewPortScroll *container.Scroll
 	// 缩略窗口
-	miniMap        *MiniMap
+	miniMap *MiniMap
 
 	// 快捷键展示控件
-	shortcutsDialog         dialog.Dialog
+	shortcutsDialog dialog.Dialog
 	// 延时截取屏幕的时候掉用出来，其实是一个表单
 	delayedScreenshotDialog dialog.Dialog
 	// 联系我们界面
@@ -199,7 +204,6 @@ func (gs *FireShotGO) FireShotNameByTime() string {
 	return tm.Format("2006-01-02 03:04:05 PM")
 }
 
-
 // GetColorPreference 颜色信息设置，若是环境变量中没有设置就使用默认值
 func (gs *FireShotGO) GetColorPreference(key string, defaultColor color.RGBA) color.RGBA {
 	isSet := gs.App.Preferences().Bool(key)
@@ -287,15 +291,14 @@ func (gs *FireShotGO) CopyImageToClipboard() {
 
 const (
 	GoogleDriveTokenPreference = "google_drive_token"
-	QiNiuAccessKey = "qiNiuAccessKey"
-	QiNiuSecretKey = "qiNiuSecretKey"
-	QiNiuBucket = "qiNiuBucket"
+	QiNiuAccessKey             = "qiNiuAccessKey"
+	QiNiuSecretKey             = "qiNiuSecretKey"
+	QiNiuBucket                = "qiNiuBucket"
 )
 
 var (
 	GoogleDrivePath = []string{"FireShotGO"}
 )
-
 
 func (gs *FireShotGO) ShareWithQiNiuDrive() {
 	glog.V(2).Infof("FireShotGO.ShareWithQiNiuDrive")
@@ -397,7 +400,7 @@ func (gs *FireShotGO) ShareWithQiNiuDrive() {
 					}
 					// 开始传输操作
 					fileName := gs.FireShotNameByTime()
-					gs.qDriveNumShared ++
+					gs.qDriveNumShared++
 					// 每次图片的名称要递增
 					fileName = fmt.Sprintf("%s_%d.png", fileName, gs.qDriveNumShared)
 					err := gs.qDrive.QiNiuShareImage(fileName, gs.Screenshot)
@@ -602,7 +605,6 @@ func (gs *FireShotGO) ConnectUsPage() {
 	gs.connectUsDialog.Show()
 }
 
-
 const DelayTimePreference = "DelayTime"
 const SelectScreenIndex = "SelectScreen"
 
@@ -648,7 +650,7 @@ func (gs *FireShotGO) DelayedScreenshotForm() {
 			func(ok bool) {
 				if ok {
 					// 获取并处理屏幕选择信息
-					sn, err :=  strconv.ParseInt(selectEntry.Text, 10, 64)
+					sn, err := strconv.ParseInt(selectEntry.Text, 10, 64)
 					if err != nil {
 						// 如果出错状态栏显示错误，状态栏目前挡放到了左下角，后期会调整到右下角
 						gs.status.SetText(fmt.Sprintf("Can't parse screen no in sm from %q: %s",
@@ -708,7 +710,6 @@ func (gs *FireShotGO) DelayedScreenshot(seconds int) {
 		gs.miniMap.Refresh()
 	}()
 }
-
 
 func (gs *FireShotGO) GetStatusHandle() (status *widget.Label) {
 	return gs.status
