@@ -20,8 +20,9 @@ import (
 func (gs *FireShotGO) BuildEditWindow() {
 	// 设置主题支持中文
 	gs.App.Settings().SetTheme(&firetheme.ShanGShouJianSongTheme{RefThemeApp: gs.App, FireFontSizeName: FireShotFontSize})
-
+	// 创建主窗口
 	gs.Win = gs.App.NewWindow(fmt.Sprintf("FireShotGO: screenshot @ %s", gs.ScreenshotTime.Format("2006-01-02 15:04:05")))
+	// 设置工具图标
 	gs.Win.SetIcon(resources.GoShotIconPng)
 
 	// 创建菜单栏
@@ -73,7 +74,7 @@ func (gs *FireShotGO) BuildEditWindow() {
 		widget.NewButtonWithIcon("箭头 (alt+a)", resources.DrawArrow,
 			func() { gs.viewPort.SetOp(DrawArrow) }),
 		// FIXME: 已添加矢量图标 2021-09-30
-		widget.NewButtonWithIcon("直线 (alt+l)",    resources.DrawLine,
+		widget.NewButtonWithIcon("直线 (alt+l)", resources.DrawLine,
 			func() { gs.viewPort.SetOp(DrawStraightLine) }),
 		circleButton,
 		container.NewHBox(
@@ -157,7 +158,7 @@ func (gs *FireShotGO) colorPicker() {
 }
 
 // MakeFireShotMenu 创建FireShotGo菜单栏
-func (gs *FireShotGO) MakeFireShotMenu() *fyne.MainMenu{
+func (gs *FireShotGO) MakeFireShotMenu() *fyne.MainMenu {
 	// 构建文件菜单
 	menuFile := fyne.NewMenu("文件",
 		fyne.NewMenuItem("保存 (ctrl+s)", func() { gs.SaveImage() }),
@@ -187,4 +188,3 @@ func (gs *FireShotGO) MakeFireShotMenu() *fyne.MainMenu{
 	return fyne.NewMainMenu(menuFile, menuSet, menuShare, menuHelp)
 
 }
-

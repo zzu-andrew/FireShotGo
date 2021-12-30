@@ -17,7 +17,7 @@ type Arrow struct {
 	// Color 定义箭头的颜色
 	Color color.Color
 
-	// Thickness 箭头的宽度
+	// Thickness 箭头的宽度 实际像素点为 Thickness*arrowHeadWidthFactor
 	Thickness float64
 
 	// rect 箭头的矩形部分 (箭头 + 矩形线框组成一条箭头线)
@@ -43,11 +43,15 @@ func NewArrow(from, to image.Point, color color.Color, thickness float64) *Arrow
 }
 
 func (c *Arrow) SetPoints(from, to image.Point) {
+	// 不支持点，最少绘制一个长度才能画出箭头
 	if to.X == from.X && to.Y == from.Y {
 		to.X += 1 // So that arrow is always at least 1 in size.
 	}
+	// 将起始位置设置给箭头
 	c.From, c.To = from, to
+	// rect 中记录起始位置，位置信息时经过Canon Min.X < Max.X and Min.Y < Max.Y
 	c.rect = image.Rectangle{Min: from, Max: to}.Canon()
+	// 取出线宽，只要> 0.1就进位
 	arrowHeadExtraPixels := int(arrowHeadWidthFactor*c.Thickness + 0.99)
 	c.rect.Min.X -= arrowHeadExtraPixels
 	c.rect.Min.Y -= arrowHeadExtraPixels
@@ -57,7 +61,9 @@ func (c *Arrow) SetPoints(from, to image.Point) {
 	// 计算矢量差
 	delta := c.To.Sub(c.From)
 	vector := mgl64.Vec2{float64(delta.X), float64(delta.Y)}
+	// Sqrt(p*p + q*q) 求出矢量的长度
 	c.vectorLength = vector.Len()
+	// 转化为单位矢量，x y 都整除长度
 	direction := vector.Mul(1.0 / c.vectorLength)
 	angle := math.Atan2(direction.Y(), direction.X())
 	glog.V(2).Infof("SetPoints(from=%v, to=%v): delta=%v, length=%.0f, angle=%5.1f",

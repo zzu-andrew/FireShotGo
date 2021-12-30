@@ -144,7 +144,7 @@ func Run() {
 	if err != nil {
 		glog.Fatalf("Failed to capture screenshot: %s", err)
 	}
-	// 这里开始构建应用窗口，crete content
+	// 这里开始构建应用窗口
 	fireShotGo.BuildEditWindow()
 	// 开始运行主窗口
 	fireShotGo.Win.ShowAndRun()
@@ -187,7 +187,7 @@ func (gs *FireShotGO) MakeScreenshot() error {
 	gs.ScreenshotTime = time.Now()
 	gs.CropRect = gs.Screenshot.Bounds()
 
-	glog.V(2).Infof("Screenshot captured bounds: %+v\n", bounds)
+	glog.V(2).Infof("截屏边界: %+v\n", bounds)
 	return nil
 }
 
