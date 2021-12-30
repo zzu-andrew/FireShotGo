@@ -178,10 +178,11 @@ func (gs *FireShotGO) MakeScreenshot() error {
 	var err error
 	// 根据指定的bounds信息截取屏幕
 	gs.Screenshot, err = screenshot.CaptureRect(bounds)
-
 	if err != nil {
+		glog.Errorf("CaptureRect failed.")
 		return err
 	}
+	// 将刚截好图的信息被分到原始截图信息上，一遍后期使用
 	gs.OriginalScreenshot = gs.Screenshot
 	gs.ScreenshotTime = time.Now()
 	gs.CropRect = gs.Screenshot.Bounds()

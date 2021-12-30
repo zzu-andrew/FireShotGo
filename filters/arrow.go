@@ -10,23 +10,26 @@ import (
 )
 
 type Arrow struct {
-	// From, To implement the starting and final point of the arrow:
-	// arrow is pointing to the "To" direction.
+	// From, To 箭头的起始点:
+	// 箭头在To的位置
 	From, To image.Point
 
-	// Color of the Arrow to be drawn.
+	// Color 定义箭头的颜色
 	Color color.Color
 
-	// Thickness of the Arrow to be drawn.
+	// Thickness 箭头的宽度
 	Thickness float64
 
-	// Rectangle enclosing arrow.
+	// rect 箭头的矩形部分 (箭头 + 矩形线框组成一条箭头线)
 	rect image.Rectangle
-
+	// 现行[3x3]矩阵
 	rebaseMatrix mgl64.Mat3
+	// 箭头需要绘制的长度
 	vectorLength float64
 }
 
+// arrowHeadLengthFactor 箭头长度预设
+// arrowHeadWidthFactor 箭头宽度预设
 const (
 	arrowHeadLengthFactor = 10.0
 	arrowHeadWidthFactor  = 6.0

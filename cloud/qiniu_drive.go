@@ -27,6 +27,7 @@ type QiNiuManager struct {
 	Bucket    string
 }
 
+// NewQiNiu 创建七牛云管理对象
 func NewQiNiu(accesskey string, secretKey string, bucket string) (*QiNiuManager, error) {
 	// 创建七牛管理对象
 	m := &QiNiuManager{
