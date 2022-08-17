@@ -17,65 +17,67 @@ import (
 	"strconv"
 )
 
-func (gs *FireShotGO) BuildEditWindow() {
+func (fs *FireShotGO) BuildEditWindow() {
 	// 设置主题支持中文
-	gs.App.Settings().SetTheme(&firetheme.ShanGShouJianSongTheme{RefThemeApp: gs.App, FireFontSizeName: FireShotFontSize})
+	fs.App.Settings().SetTheme(&firetheme.ShanGShouJianSongTheme{RefThemeApp: fs.App, FireFontSizeName: FireShotFontSize})
 	// 创建主窗口
-	gs.Win = gs.App.NewWindow(fmt.Sprintf("FireShotGO: screenshot @ %s", gs.ScreenshotTime.Format("2006-01-02 15:04:05")))
+	fs.Win = fs.App.NewWindow(fmt.Sprintf("FireShotGO: screenshot @ %s", fs.ScreenshotTime.Format("2006-01-02 15:04:05")))
 	// 设置工具图标
-	gs.Win.SetIcon(resources.GoShotIconPng)
+	fs.Win.SetIcon(resources.GoShotIconPng)
 
 	// 创建菜单栏
-	gs.Win.SetMainMenu(gs.MakeFireShotMenu())
+	fs.Win.SetMainMenu(fs.MakeFireShotMenu())
 
 	// 截屏图片操作视窗.
-	gs.viewPort = NewViewPort(gs)
+	fs.viewPort = NewViewPort(fs)
 
 	// Side toolbar.
 	cropTopLeft := widget.NewButtonWithIcon("", resources.CropTopLeft,
 		func() {
-			gs.status.SetText("点击左裁剪的上角")
-			gs.viewPort.SetOp(CropTopLeft)
+			fs.status.SetText("点击左裁剪的上角")
+			fs.viewPort.SetOp(CropTopLeft)
 		})
 	cropBottomRight := widget.NewButtonWithIcon("", resources.CropBottomRight,
 		func() {
-			gs.status.SetText("点击裁剪的左下角")
-			gs.viewPort.SetOp(CropBottomRight)
+			fs.status.SetText("点击裁剪的左下角")
+			fs.viewPort.SetOp(CropBottomRight)
 		})
 	cropReset := widget.NewButtonWithIcon("", resources.Reset, func() {
-		gs.viewPort.cropReset()
-		gs.viewPort.SetOp(NoOp)
+		fs.viewPort.cropReset()
+		fs.viewPort.SetOp(NoOp)
 	})
 
-	circleButton := widget.NewButton("圆 (alt+c)", func() { gs.viewPort.SetOp(DrawCircle) })
+	circleButton := widget.NewButton("圆 (alt+c)", func() { fs.viewPort.SetOp(DrawCircle) })
 	circleButton.SetIcon(resources.DrawCircle)
 
-	gs.thicknessEntry = &widget.Entry{Validator: validation.NewRegexp(`\d`, "Must contain a number")}
-	gs.thicknessEntry.SetPlaceHolder(fmt.Sprintf("%g", gs.viewPort.Thickness))
-	gs.thicknessEntry.OnChanged = func(str string) {
+	fs.thicknessEntry = &widget.Entry{Validator: validation.NewRegexp(`\d`, "Must contain a number")}
+	fs.thicknessEntry.SetPlaceHolder(fmt.Sprintf("%g", fs.viewPort.Thickness))
+	fs.thicknessEntry.OnChanged = func(str string) {
 		glog.V(2).Infof("Thickness changed to %s", str)
 		val, err := strconv.ParseFloat(str, 64)
 		if err == nil {
-			gs.viewPort.Thickness = val
-			gs.App.Preferences().SetFloat(ThicknessPreference, val)
+			fs.viewPort.Thickness = val
+			fs.App.Preferences().SetFloat(ThicknessPreference, val)
 		}
 	}
 
-	gs.colorSample = canvas.NewRectangle(gs.viewPort.DrawingColor)
+	fs.colorSample = canvas.NewRectangle(fs.viewPort.DrawingColor)
 	size1d := theme.IconInlineSize()
 	size := fyne.NewSize(5*size1d, size1d)
-	gs.colorSample.SetMinSize(size)
-	gs.colorSample.Resize(size)
+	fs.colorSample.SetMinSize(size)
+	fs.colorSample.Resize(size)
 
-	gs.miniMap = NewMiniMap(gs, gs.viewPort)
+	fs.miniMap = NewMiniMap(fs, fs.viewPort)
 
 	toolBar := container.NewVBox(
-		gs.miniMap,
+		fs.miniMap,
 		widget.NewButtonWithIcon("箭头 (alt+a)", resources.DrawArrow,
-			func() { gs.viewPort.SetOp(DrawArrow) }),
+			func() { fs.viewPort.SetOp(DrawArrow) }),
 		// FIXME: 已添加矢量图标 2021-09-30
 		widget.NewButtonWithIcon("直线 (alt+l)", resources.DrawLine,
-			func() { gs.viewPort.SetOp(DrawStraightLine) }),
+			func() { fs.viewPort.SetOp(DrawStraightLine) }),
+		widget.NewButtonWithIcon("虚线 (alt+d)", resources.DrawDottedLine,
+			func() { fs.viewPort.SetOp(DrawDottedLine) }),
 		circleButton,
 		container.NewHBox(
 			widget.NewLabel("裁剪:"),
@@ -84,106 +86,106 @@ func (gs *FireShotGO) BuildEditWindow() {
 			cropReset,
 		),
 		container.NewHBox(
-			widget.NewIcon(resources.Thickness), gs.thicknessEntry,
-			widget.NewButtonWithIcon("", resources.ColorWheel, func() { gs.colorPicker() }),
-			gs.colorSample,
+			widget.NewIcon(resources.Thickness), fs.thicknessEntry,
+			widget.NewButtonWithIcon("", resources.ColorWheel, func() { fs.colorPicker() }),
+			fs.colorSample,
 		),
 		widget.NewButtonWithIcon("文本 (alt+t)", resources.DrawText,
-			func() { gs.viewPort.SetOp(DrawText) }),
+			func() { fs.viewPort.SetOp(DrawText) }),
 	)
 
 	// Status bar with zoom control.
-	gs.zoomEntry = &widget.Entry{Validator: validation.NewRegexp(`\d`, "Must contain a number")}
-	gs.zoomEntry.SetPlaceHolder("0.0")
-	gs.zoomEntry.OnChanged = func(str string) {
+	fs.zoomEntry = &widget.Entry{Validator: validation.NewRegexp(`\d`, "Must contain a number")}
+	fs.zoomEntry.SetPlaceHolder("0.0")
+	fs.zoomEntry.OnChanged = func(str string) {
 		glog.V(2).Infof("Zoom level changed to %s", str)
 		val, err := strconv.ParseFloat(str, 64)
 		if err == nil {
-			gs.viewPort.Log2Zoom = val
-			gs.viewPort.updateViewSize()
-			gs.viewPort.Refresh()
+			fs.viewPort.Log2Zoom = val
+			fs.viewPort.updateViewSize()
+			fs.viewPort.Refresh()
 		}
 	}
 	zoomReset := widget.NewButton("", func() {
-		gs.zoomEntry.SetText("0")
-		gs.viewPort.Log2Zoom = 0
-		gs.viewPort.updateViewSize()
-		gs.viewPort.Refresh()
+		fs.zoomEntry.SetText("0")
+		fs.viewPort.Log2Zoom = 0
+		fs.viewPort.updateViewSize()
+		fs.viewPort.Refresh()
 	})
 	zoomReset.SetIcon(resources.Reset)
-	gs.status = widget.NewLabel(fmt.Sprintf("Image size: %s", gs.Screenshot.Bounds()))
+	fs.status = widget.NewLabel(fmt.Sprintf("Image size: %s", fs.Screenshot.Bounds()))
 
 	statusBar := container.NewBorder(
 		nil,
 		nil,
 		nil,
-		container.NewHBox(widget.NewLabel("Zoom:"), gs.zoomEntry, zoomReset),
-		gs.status,
+		container.NewHBox(widget.NewLabel("Zoom:"), fs.zoomEntry, zoomReset),
+		fs.status,
 	)
 
 	// Stitch all together.
 	split := container.NewHSplit(
 		toolBar,
-		gs.viewPort,
+		fs.viewPort,
 	)
 	split.Offset = 0.2
 
 	topLevel := container.NewBorder(
 		nil, statusBar, nil, nil, container.NewMax(split))
-	gs.Win.SetContent(topLevel)
-	gs.Win.Resize(fyne.NewSize(1024.0, 768.0))
+	fs.Win.SetContent(topLevel)
+	fs.Win.Resize(fyne.NewSize(1024.0, 768.0))
 
 	// Register shortcuts.
-	gs.Win.Canvas().AddShortcut(&desktop.CustomShortcut{KeyName: fyne.KeyQ, Modifier: desktop.ControlModifier},
+	fs.Win.Canvas().AddShortcut(&desktop.CustomShortcut{KeyName: fyne.KeyQ, Modifier: desktop.ControlModifier},
 		func(shortcut fyne.Shortcut) {
 			glog.Infof("Quit requested by shortcut %s", shortcut.ShortcutName())
-			gs.App.Quit()
+			fs.App.Quit()
 		})
 
-	gs.RegisterShortcuts()
+	fs.RegisterShortcuts()
 }
 
-func (gs *FireShotGO) colorPicker() {
+func (fs *FireShotGO) colorPicker() {
 	glog.V(2).Infof("colorPicker():")
 	picker := dialog.NewColorPicker(
 		"Pick a Color", "Select color for edits",
 		func(c color.Color) {
-			gs.viewPort.DrawingColor = c
-			gs.SetColorPreference(DrawingColorPreference, c)
-			gs.colorSample.FillColor = c
-			gs.colorSample.Refresh()
+			fs.viewPort.DrawingColor = c
+			fs.SetColorPreference(DrawingColorPreference, c)
+			fs.colorSample.FillColor = c
+			fs.colorSample.Refresh()
 		},
-		gs.Win)
+		fs.Win)
 	picker.Show()
 }
 
 // MakeFireShotMenu 创建FireShotGo菜单栏
-func (gs *FireShotGO) MakeFireShotMenu() *fyne.MainMenu {
+func (fs *FireShotGO) MakeFireShotMenu() *fyne.MainMenu {
 	// 构建文件菜单
 	menuFile := fyne.NewMenu("文件",
-		fyne.NewMenuItem("保存 (ctrl+s)", func() { gs.SaveImage() }),
-		fyne.NewMenuItem("截屏", func() { gs.DelayedScreenshotForm() }),
+		fyne.NewMenuItem("保存 (ctrl+s)", func() { fs.SaveImage() }),
+		fyne.NewMenuItem("截屏", func() { fs.DelayedScreenshotForm() }),
 	) // Quit is added automatically.
 
 	// 构建编辑菜单
 	menuSet := fyne.NewMenu("编辑",
 		fyne.NewMenuItem("字体大小",
 			func() {
-				gs.fireShotGoFont.FireShotFontEdit(gs)
+				fs.fireShotGoFont.FireShotFontEdit(fs)
 			}),
-		fyne.NewMenuItem("复制 (ctrl+c)", func() { gs.CopyImageToClipboard() }),
+		fyne.NewMenuItem("复制 (ctrl+c)", func() { fs.CopyImageToClipboard() }),
 	)
 
 	// 构建云存储菜单
 	menuShare := fyne.NewMenu("云存储",
-		fyne.NewMenuItem("谷歌云 (ctrl+g)", func() { gs.ShareWithGoogleDrive() }),
-		fyne.NewMenuItem("七牛云 ", func() { gs.ShareWithQiNiuDrive() }),
+		fyne.NewMenuItem("谷歌云 (ctrl+g)", func() { fs.ShareWithGoogleDrive() }),
+		fyne.NewMenuItem("七牛云 ", func() { fs.ShareWithQiNiuDrive() }),
 	)
 
 	// 构建帮助菜单
 	menuHelp := fyne.NewMenu("帮助",
-		fyne.NewMenuItem("快捷方式 (ctrl+?)", func() { gs.ShowShortcutsPage() }),
-		fyne.NewMenuItem("联系我们 ", func() { gs.ConnectUsPage() }),
+		fyne.NewMenuItem("快捷方式 (ctrl+?)", func() { fs.ShowShortcutsPage() }),
+		fyne.NewMenuItem("联系我们 ", func() { fs.ConnectUsPage() }),
 	)
 	return fyne.NewMainMenu(menuFile, menuSet, menuShare, menuHelp)
 

@@ -97,36 +97,36 @@ type ImageFilter interface {
 // and regenerate Screenshot.
 // If full == true, regenerates full Screenshot. If false, regenerates only
 // visible area.
-func (gs *FireShotGO) ApplyFilters(full bool) {
-	glog.V(2).Infof("ApplyFilters: %d filters", len(gs.Filters))
-	filteredImage := image.Image(gs.OriginalScreenshot)
-	for _, filter := range gs.Filters {
+func (fs *FireShotGO) ApplyFilters(full bool) {
+	glog.V(2).Infof("ApplyFilters: %d filters", len(fs.Filters))
+	filteredImage := image.Image(fs.OriginalScreenshot)
+	for _, filter := range fs.Filters {
 		filteredImage = filter.Apply(filteredImage)
 	}
 
-	if gs.Screenshot == gs.OriginalScreenshot || gs.Screenshot.Rect.Dx() != gs.CropRect.Dx() || gs.Screenshot.Rect.Dy() != gs.CropRect.Dy() {
+	if fs.Screenshot == fs.OriginalScreenshot || fs.Screenshot.Rect.Dx() != fs.CropRect.Dx() || fs.Screenshot.Rect.Dy() != fs.CropRect.Dy() {
 		// Recreate image buffer.
-		crop := image.NewRGBA(image.Rect(0, 0, gs.CropRect.Dx(), gs.CropRect.Dy()))
-		gs.Screenshot = crop
+		crop := image.NewRGBA(image.Rect(0, 0, fs.CropRect.Dx(), fs.CropRect.Dy()))
+		fs.Screenshot = crop
 		full = true // Regenerate the full buffer.
 	}
 	if full {
-		draw.Src.Draw(gs.Screenshot, gs.Screenshot.Rect, filteredImage, gs.CropRect.Min)
+		draw.Src.Draw(fs.Screenshot, fs.Screenshot.Rect, filteredImage, fs.CropRect.Min)
 	} else {
 		var tgtRect image.Rectangle
-		tgtRect.Min = image.Point{X: gs.viewPort.viewX, Y: gs.viewPort.viewY}
-		tgtRect.Max = tgtRect.Min.Add(image.Point{X: gs.viewPort.viewW, Y: gs.viewPort.viewH})
-		srcPoint := gs.CropRect.Min.Add(tgtRect.Min)
-		draw.Src.Draw(gs.Screenshot, tgtRect, filteredImage, srcPoint)
+		tgtRect.Min = image.Point{X: fs.viewPort.viewX, Y: fs.viewPort.viewY}
+		tgtRect.Max = tgtRect.Min.Add(image.Point{X: fs.viewPort.viewW, Y: fs.viewPort.viewH})
+		srcPoint := fs.CropRect.Min.Add(tgtRect.Min)
+		draw.Src.Draw(fs.Screenshot, tgtRect, filteredImage, srcPoint)
 	}
 
-	if gs.viewPort != nil {
-		gs.viewPort.renderCache()
-		gs.viewPort.Refresh()
+	if fs.viewPort != nil {
+		fs.viewPort.renderCache()
+		fs.viewPort.Refresh()
 	}
-	if gs.miniMap != nil {
-		gs.miniMap.renderCache()
-		gs.miniMap.Refresh()
+	if fs.miniMap != nil {
+		fs.miniMap.renderCache()
+		fs.miniMap.Refresh()
 	}
 }
 
@@ -163,7 +163,6 @@ func (gs *FireShotGO) MakeScreenshot() error {
 
 	// TODO 支持鼠标绘制之后进行
 	// TODO 支持矩形绘制
-	// TODO 虚线功能
 
 	if gs.displayIndex < 0 || gs.displayIndex > n {
 		glog.Fatalf("displayIndex 非法请确认")
@@ -182,7 +181,7 @@ func (gs *FireShotGO) MakeScreenshot() error {
 		glog.Errorf("CaptureRect failed.")
 		return err
 	}
-	// 将刚截好图的信息被分到原始截图信息上，一遍后期使用
+	// 将刚截好图的信息被分到原始截图信息上，以便后期使用
 	gs.OriginalScreenshot = gs.Screenshot
 	gs.ScreenshotTime = time.Now()
 	gs.CropRect = gs.Screenshot.Bounds()
@@ -500,7 +499,7 @@ func (gs *FireShotGO) askForGoogleDriveAuthorization() string {
 
 // RegisterShortcuts adds all the shortcuts and keys FireShotGO
 // listens to.
-// When updating here, please update also the `gs.ShowShortcutsPage()`
+// When updating here, please update also the `fs.ShowShortcutsPage()`
 // method to reflect the changes.
 func (gs *FireShotGO) RegisterShortcuts() {
 	gs.Win.Canvas().AddShortcut(

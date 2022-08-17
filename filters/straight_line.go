@@ -27,7 +27,6 @@ type StraightLine struct {
 	vectorLength float64
 }
 
-
 // NewStraightLine 创建一个新的直线，接口中国捏必须传入直线的宽度、颜色以及起点.
 func NewStraightLine(from, to image.Point, color color.Color, thickness float64) *StraightLine {
 	c := &StraightLine{Color: color, Thickness: thickness}
@@ -35,12 +34,7 @@ func NewStraightLine(from, to image.Point, color color.Color, thickness float64)
 	return c
 }
 
-const (
-	straightLineHeadLengthFactor = 10.0
-	straightLineHeadWidthFactor  = 6.0
-)
-
-// SetPoints
+// SetPoints 图形打点
 func (c *StraightLine) SetPoints(from, to image.Point) {
 	if to.X == from.X && to.Y == from.Y {
 		to.X += 1 // 保证直线最少为一个像素大小，否则图像上显示不出来
@@ -73,7 +67,6 @@ func (c *StraightLine) SetPoints(from, to image.Point) {
 	c.rebaseMatrix = c.rebaseMatrix.Mul3(
 		mgl64.Translate2D(float64(-c.From.X), float64(-c.From.Y)))
 }
-
 
 // at is the function given to the filterImage object.
 func (c *StraightLine) at(x, y int, under color.Color) color.Color {

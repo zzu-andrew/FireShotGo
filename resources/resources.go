@@ -31,6 +31,10 @@ var DrawArrow = fyne.NewStaticResource("", embedDrawArrow)
 var embedDrawLine []byte
 var DrawLine = fyne.NewStaticResource("", embedDrawLine)
 
+//go:embed draw-dot-line.png
+var embedDrawDotted []byte
+var DrawDottedLine = fyne.NewStaticResource("", embedDrawDotted)
+
 //go:embed draw_text.png
 var embedDrawText []byte
 var DrawText = fyne.NewStaticResource("", embedDrawText)
@@ -58,4 +62,3 @@ var GoShotIconIco = fyne.NewStaticResource("GoShotIconIco", embedGoShotIconIco)
 //go:embed weixin.png
 var weChatPic []byte
 var WeChat = fyne.NewStaticResource("GoShotIconIco", weChatPic)
-
