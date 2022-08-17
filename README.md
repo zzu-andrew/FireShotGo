@@ -144,7 +144,11 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 <img src="image/image-20210930175745365.png" alt="image-20210930175745365" style="zoom: 33%;" />
 
+### `v1.0.8`
 
+支持虚线功能
+
+<img src="image/image-20220817211535625.png" alt="image-20220817211535625" style="zoom: 50%;" />
 
 ## 加入我们
 
