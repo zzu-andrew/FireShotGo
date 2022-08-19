@@ -148,6 +148,8 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 支持虚线功能
 
+<img src="image/image-20220817211535625.png" alt="image-20220817211535625" style="zoom: 50%;" />
+
 ### `v1.0.9`
 
 虚线间隔支持设置
@@ -155,7 +157,6 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 ![img.png](image/img.png)
 
 
-<img src="image/image-20220817211535625.png" alt="image-20220817211535625" style="zoom: 50%;" />
 
 ## 加入我们
 
