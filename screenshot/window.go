@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/driver/desktop"
@@ -76,8 +77,11 @@ func (fs *FireShotGO) BuildEditWindow() {
 		// FIXME: 已添加矢量图标 2021-09-30
 		widget.NewButtonWithIcon("直线 (alt+l)", resources.DrawLine,
 			func() { fs.viewPort.SetOp(DrawStraightLine) }),
+		widget.NewSeparator(),
 		widget.NewButtonWithIcon("虚线 (alt+d)", resources.DrawDottedLine,
 			func() { fs.viewPort.SetOp(DrawDottedLine) }),
+		fs.setDottedLineSpacing(),
+		widget.NewSeparator(),
 		circleButton,
 		container.NewHBox(
 			widget.NewLabel("裁剪:"),
@@ -145,6 +149,50 @@ func (fs *FireShotGO) BuildEditWindow() {
 	fs.RegisterShortcuts()
 }
 
+func (fs *FireShotGO) setDottedLineSpacing() *fyne.Container {
+	data := binding.BindFloat(&fs.viewPort.DottedLineSpacing)
+
+	//label := widget.NewLabelWithData(binding.FloatToStringWithFormat(data, "Float value: %2.1f"))
+	//entry := widget.NewEntryWithData(binding.FloatToStringWithFormat(data, "%2.1f"))
+	//
+	//floats := container.NewGridWithColumns(2, label, entry)
+
+	slide := widget.NewSliderWithData(0.1, 99.9, data)
+	slide.Step = 0.1
+
+	bar := widget.NewProgressBarWithData(data)
+	bar.Min = 0.1
+	bar.Max = 99.9
+
+	buttons := container.NewGridWithColumns(4,
+		widget.NewButton("0", func() {
+			err := data.Set(0.1)
+			if err != nil {
+				return
+			}
+		}),
+		widget.NewButton("30", func() {
+			err := data.Set(30)
+			if err != nil {
+				return
+			}
+		}),
+		widget.NewButton("70", func() {
+			err := data.Set(70)
+			if err != nil {
+				return
+			}
+		}),
+		widget.NewButton("100", func() {
+			err := data.Set(99.9)
+			if err != nil {
+				return
+			}
+		}))
+
+	return container.NewVBox(slide, bar, buttons)
+}
+
 func (fs *FireShotGO) colorPicker() {
 	glog.V(2).Infof("colorPicker():")
 	picker := dialog.NewColorPicker(
@@ -174,6 +222,9 @@ func (fs *FireShotGO) MakeFireShotMenu() *fyne.MainMenu {
 				fs.fireShotGoFont.FireShotFontEdit(fs)
 			}),
 		fyne.NewMenuItem("复制 (ctrl+c)", func() { fs.CopyImageToClipboard() }),
+		fyne.NewMenuItem("虚线设置", func() {
+			fs.fireShotGoFont.FireShotFontEdit(fs)
+		}),
 	)
 
 	// 构建云存储菜单

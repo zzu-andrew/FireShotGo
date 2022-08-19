@@ -295,6 +295,27 @@ func (gs *FireShotGO) CopyImageToClipboard() {
 	}
 }
 
+func (gs *FireShotGO) MakeInputTab(_ fyne.Window) fyne.CanvasObject {
+	selectEntry := widget.NewSelectEntry([]string{"Option A", "Option B", "Option C"})
+	selectEntry.PlaceHolder = "Type or select"
+	disabledCheck := widget.NewCheck("Disabled check", func(bool) {})
+	disabledCheck.Disable()
+	radio := widget.NewRadioGroup([]string{"Radio Item 1", "Radio Item 2"}, func(s string) { fmt.Println("selected", s) })
+	radio.Horizontal = true
+	disabledRadio := widget.NewRadioGroup([]string{"Disabled radio"}, func(string) {})
+	disabledRadio.Disable()
+
+	return container.NewVBox(
+		widget.NewSelect([]string{"Option 1", "Option 2", "Option 3"}, func(s string) { fmt.Println("selected", s) }),
+		selectEntry,
+		widget.NewCheck("Check", func(on bool) { fmt.Println("checked", on) }),
+		disabledCheck,
+		radio,
+		disabledRadio,
+		widget.NewSlider(0, 100),
+	)
+}
+
 const (
 	GoogleDriveTokenPreference = "google_drive_token"
 	QiNiuAccessKey             = "qiNiuAccessKey"

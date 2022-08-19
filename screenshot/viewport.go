@@ -45,6 +45,9 @@ type ViewPort struct {
 	// FontSize 字体的大小
 	FontSize float64
 
+	// 虚线间隔配置
+	DottedLineSpacing float64
+
 	// Are of the screenshot that is visible in the current window: these are the start (viewX, viewY)
 	// and sizes in fs.screenshot pixels -- each may be zoomed in/out when displaying.
 	viewX, viewY, viewW, viewH int
@@ -385,7 +388,7 @@ func (vp *ViewPort) Dragged(ev *fyne.DragEvent) {
 			vp.currentDottedLine = filters.NewDottedLine(
 				image.Point{X: startX, Y: startY},
 				image.Point{X: startX + 1, Y: startY + 1},
-				vp.DrawingColor, vp.Thickness)
+				vp.DrawingColor, vp.Thickness, vp.DottedLineSpacing)
 
 			vp.fs.Filters = append(vp.fs.Filters, vp.currentDottedLine)
 			vp.fs.ApplyFilters(false)

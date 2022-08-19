@@ -25,11 +25,14 @@ type DottedLine struct {
 	rebaseMatrix mgl64.Mat3
 	// 按照矢量求出当前绘制的长度
 	vectorLength float64
+
+	// 虚线间隔
+	dottedLineSpacing float64
 }
 
 // NewDottedLine 创建一个新的虚线，接口中必须传入虚线的宽度、颜色以及起点.
-func NewDottedLine(from, to image.Point, color color.Color, thickness float64) *DottedLine {
-	c := &DottedLine{Color: color, Thickness: thickness}
+func NewDottedLine(from, to image.Point, color color.Color, thickness float64, dottedLineSpacing float64) *DottedLine {
+	c := &DottedLine{Color: color, Thickness: thickness, dottedLineSpacing: dottedLineSpacing}
 	c.SetPoints(from, to)
 	return c
 }
@@ -104,7 +107,10 @@ func (c *DottedLine) at(x, y int, under color.Color) color.Color {
 
 	if homogPoint.X() < c.vectorLength {
 		if math.Abs(homogPoint.Y()) < c.Thickness/2 {
-			if (int)(homogPoint.X()/5)%2 == 0 {
+			if c.dottedLineSpacing < 0.01 {
+				c.dottedLineSpacing = 0.01
+			}
+			if (int)(homogPoint.X()/c.dottedLineSpacing)%2 == 0 {
 				return c.Color
 			}
 		}
