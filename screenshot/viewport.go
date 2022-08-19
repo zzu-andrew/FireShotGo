@@ -28,8 +28,8 @@ import (
 type ViewPort struct {
 	widget.BaseWidget
 
-	// gs 应用全局变量指针.
-	gs *FireShotGO
+	// fs 应用全局变量指针.
+	fs *FireShotGO
 
 	// Geometry of what is being displayed:
 	// Log2Zoom is the log2 of the zoom multiplier, it's what we show to the user. It
@@ -45,8 +45,11 @@ type ViewPort struct {
 	// FontSize 字体的大小
 	FontSize float64
 
+	// 虚线间隔配置
+	DottedLineSpacing float64
+
 	// Are of the screenshot that is visible in the current window: these are the start (viewX, viewY)
-	// and sizes in gs.screenshot pixels -- each may be zoomed in/out when displaying.
+	// and sizes in fs.screenshot pixels -- each may be zoomed in/out when displaying.
 	viewX, viewY, viewW, viewH int
 
 	// Fyne objects.
@@ -54,17 +57,18 @@ type ViewPort struct {
 	raster  *canvas.Raster
 
 	// 鼠标后面跟随的图标
-	cursor                                            *canvas.Image
-	cursorCropTopLeft, cursorCropBottomRight          *canvas.Image
+	cursor                                   *canvas.Image
+	cursorCropTopLeft, cursorCropBottomRight *canvas.Image
 
 	// 绘图工具区域
-	cursorDrawCircle *canvas.Image
-	cursorDrawArrow *canvas.Image
-	cursorDrawText *canvas.Image
-	cursorDrawLine *canvas.Image
+	cursorDrawCircle  *canvas.Image
+	cursorDrawArrow   *canvas.Image
+	cursorDrawText    *canvas.Image
+	cursorDrawLine    *canvas.Image
+	cursorDrawDotLine *canvas.Image
 
 	// 鼠标是否在视图窗口上
-	mouseIn         bool
+	mouseIn bool
 	// 鼠标移动位置记录
 	mouseMoveEvents chan fyne.Position
 
@@ -78,14 +82,16 @@ type ViewPort struct {
 	dragSkipTap                    bool // Set at DragEnd(), because the end of the drag also triggers a tap.
 
 	// 鼠标点击之后触发事件调用的 操作
-	currentOperation OperationType
-	currentCircle    *filters.Circle // 开始绘制圆, 只有当先设置 currentOperation==DrawCircle 之后才能使用
-	currentArrow     *filters.Arrow  // 开始绘制箭头, 只有设置 currentOperation==DrawArrow 之后才能使用
-	currentStraightLine   *filters.StraightLine  // 开始绘制直线 只有设置了 currentOperation==DrawStraightLine 之后才能使用
+	currentOperation    OperationType
+	currentCircle       *filters.Circle       // 开始绘制圆, 只有当先设置 currentOperation==DrawCircle 之后才能使用
+	currentArrow        *filters.Arrow        // 开始绘制箭头, 只有设置 currentOperation==DrawArrow 之后才能使用
+	currentStraightLine *filters.StraightLine // 开始绘制直线 只有设置了 currentOperation==DrawStraightLine 之后才能使用
+	currentDottedLine   *filters.DottedLine   // 开始绘制虚线
 
 	fyne.ShortcutHandler
 }
 
+// OperationType 操作类型
 type OperationType int
 
 const (
@@ -102,6 +108,8 @@ const (
 	DrawText
 	// DrawStraightLine 绘制直线
 	DrawStraightLine
+	// DrawDottedLine 绘制虚线
+	DrawDottedLine
 )
 
 // Ensure ViewPort implements the following interfaces.
@@ -124,7 +132,7 @@ func NewViewPort(gs *FireShotGO) (vp *ViewPort) {
 	}
 
 	vp = &ViewPort{
-		gs:                    gs,
+		fs: gs,
 		// 绘图工具初始化区域,这里生成的是跟随绘图鼠标的缩略图标
 		cursorCropTopLeft:     canvas.NewImageFromResource(resources.CropTopLeft),
 		cursorCropBottomRight: canvas.NewImageFromResource(resources.CropBottomRight),
@@ -132,11 +140,12 @@ func NewViewPort(gs *FireShotGO) (vp *ViewPort) {
 		cursorDrawArrow:       canvas.NewImageFromResource(resources.DrawArrow),
 		cursorDrawText:        canvas.NewImageFromResource(resources.DrawText),
 		cursorDrawLine:        canvas.NewImageFromResource(resources.DrawLine),
+		cursorDrawDotLine:     canvas.NewImageFromResource(resources.DrawDottedLine),
 		// 记录鼠标位置信息
-		mouseMoveEvents:       make(chan fyne.Position, 1000),
+		mouseMoveEvents: make(chan fyne.Position, 1000),
 
 		// 如果系统变量没有设置就使用默认值，字体大小
-		FontSize:  prefOrFloat(FontSizePreference, 16*float64(gs.Win.Canvas().Scale())),
+		FontSize: prefOrFloat(FontSizePreference, 16*float64(gs.Win.Canvas().Scale())),
 		// 线条宽度，用于绘制线条的时候使用
 		Thickness: prefOrFloat(ThicknessPreference, 3.0),
 		// 绘制的颜色
@@ -232,15 +241,15 @@ func (vp *ViewPort) Scrolled(ev *fyne.ScrollEvent) {
 
 	// Update zoom.
 	vp.Log2Zoom += float64(ev.Scrolled.DY) / 50.0
-	vp.gs.zoomEntry.SetText(fmt.Sprintf("%.3g", vp.Log2Zoom))
+	vp.fs.zoomEntry.SetText(fmt.Sprintf("%.3g", vp.Log2Zoom))
 
 	// Update geometry.
 	vp.updateViewSize()
 	vp.viewX = screenshotX - int(ratioX*float32(vp.viewW)+0.5)
 	vp.viewY = screenshotY - int(ratioY*float32(vp.viewH)+0.5)
 	vp.Refresh()
-	if vp.gs.miniMap != nil {
-		vp.gs.miniMap.updateViewPortRect()
+	if vp.fs.miniMap != nil {
+		vp.fs.miniMap.updateViewPortRect()
 	}
 }
 
@@ -265,8 +274,8 @@ func (vp *ViewPort) draw(w, h int) image.Image {
 	// Regenerate cache.
 	vp.cache = image.NewRGBA(image.Rect(0, 0, w, h))
 	vp.updateViewSize()
-	if vp.gs.miniMap != nil {
-		vp.gs.miniMap.updateViewPortRect()
+	if vp.fs.miniMap != nil {
+		vp.fs.miniMap.updateViewPortRect()
 	}
 	vp.renderCache()
 	return vp.cache
@@ -288,7 +297,7 @@ func (vp *ViewPort) zoom() float64 {
 func (vp *ViewPort) renderCache() {
 	const bytesPerPixel = 4 // RGBA.
 	w, h := wh(vp.cache)
-	img := vp.gs.Screenshot
+	img := vp.fs.Screenshot
 	imgW, imgH := wh(img)
 	zoom := vp.zoom()
 
@@ -342,8 +351,8 @@ func (vp *ViewPort) Dragged(ev *fyne.DragEvent) {
 		go vp.consumeDragEvents()
 
 		startX, startY := vp.screenshotPos(vp.dragStart)
-		startX += vp.gs.CropRect.Min.X
-		startY += vp.gs.CropRect.Min.Y
+		startX += vp.fs.CropRect.Min.X
+		startY += vp.fs.CropRect.Min.Y
 
 		switch vp.currentOperation {
 		case NoOp, CropTopLeft, CropBottomRight, DrawText:
@@ -354,16 +363,16 @@ func (vp *ViewPort) Dragged(ev *fyne.DragEvent) {
 				Min: image.Point{X: startX, Y: startY},
 				Max: image.Point{X: startX + 5, Y: startY + 5},
 			}, vp.DrawingColor, vp.Thickness)
-			vp.gs.Filters = append(vp.gs.Filters, vp.currentCircle)
-			vp.gs.ApplyFilters(false)
+			vp.fs.Filters = append(vp.fs.Filters, vp.currentCircle)
+			vp.fs.ApplyFilters(false)
 		case DrawArrow:
 			glog.V(2).Infof("Tapped(): draw an arrow starting at (%d, %d)", startX, startY)
 			vp.currentArrow = filters.NewArrow(
 				image.Point{X: startX, Y: startY},
 				image.Point{X: startX + 1, Y: startY + 1},
 				vp.DrawingColor, vp.Thickness)
-			vp.gs.Filters = append(vp.gs.Filters, vp.currentArrow)
-			vp.gs.ApplyFilters(false)
+			vp.fs.Filters = append(vp.fs.Filters, vp.currentArrow)
+			vp.fs.ApplyFilters(false)
 
 		case DrawStraightLine:
 			glog.V(2).Infof("Tapped(): draw an Line starting at (%d, %d)", startX, startY)
@@ -372,8 +381,17 @@ func (vp *ViewPort) Dragged(ev *fyne.DragEvent) {
 				image.Point{X: startX + 1, Y: startY + 1},
 				vp.DrawingColor, vp.Thickness)
 
-			vp.gs.Filters = append(vp.gs.Filters, vp.currentStraightLine)
-			vp.gs.ApplyFilters(false)
+			vp.fs.Filters = append(vp.fs.Filters, vp.currentStraightLine)
+			vp.fs.ApplyFilters(false)
+		case DrawDottedLine:
+			glog.V(2).Infof("Tapped(): draw an Line starting at (%d, %d)", startX, startY)
+			vp.currentDottedLine = filters.NewDottedLine(
+				image.Point{X: startX, Y: startY},
+				image.Point{X: startX + 1, Y: startY + 1},
+				vp.DrawingColor, vp.Thickness, vp.DottedLineSpacing)
+
+			vp.fs.Filters = append(vp.fs.Filters, vp.currentDottedLine)
+			vp.fs.ApplyFilters(false)
 		}
 
 		return // No need to process first event.
@@ -437,6 +455,8 @@ func (vp *ViewPort) doDragThrottled(ev *fyne.DragEvent) {
 		vp.dragArrow(ev.Position)
 	case DrawStraightLine:
 		vp.dragLine(ev.Position)
+	case DrawDottedLine:
+		vp.dragDottedLine(ev.Position)
 	}
 }
 
@@ -449,7 +469,7 @@ func (vp *ViewPort) dragViewDelta(delta fyne.Position) {
 	vp.viewX = vp.dragStartViewX - int(ratioX*float32(vp.viewW)+0.5)
 	vp.viewY = vp.dragStartViewY - int(ratioY*float32(vp.viewH)+0.5)
 	vp.Refresh()
-	vp.gs.miniMap.updateViewPortRect()
+	vp.fs.miniMap.updateViewPortRect()
 }
 
 func (vp *ViewPort) dragCircle(toPos fyne.Position) {
@@ -457,17 +477,17 @@ func (vp *ViewPort) dragCircle(toPos fyne.Position) {
 		glog.Errorf("dragCircle(): dragCircle event, but none has been started yet!?")
 	}
 	startX, startY := vp.screenshotPos(vp.dragStart)
-	startX += vp.gs.CropRect.Min.X
-	startY += vp.gs.CropRect.Min.Y
+	startX += vp.fs.CropRect.Min.X
+	startY += vp.fs.CropRect.Min.Y
 	toX, toY := vp.screenshotPos(toPos)
-	toX += vp.gs.CropRect.Min.X
-	toY += vp.gs.CropRect.Min.Y
+	toX += vp.fs.CropRect.Min.X
+	toY += vp.fs.CropRect.Min.Y
 	vp.currentCircle.SetDim(image.Rectangle{
 		Min: image.Point{X: startX, Y: startY},
 		Max: image.Point{X: toX, Y: toY},
 	}.Canon())
 	glog.V(2).Infof("dragCircle(): draw a circle in %+v", vp.currentCircle)
-	vp.gs.ApplyFilters(false)
+	vp.fs.ApplyFilters(false)
 	vp.renderCache()
 	vp.Refresh()
 }
@@ -477,11 +497,11 @@ func (vp *ViewPort) dragArrow(toPos fyne.Position) {
 		glog.Errorf("dragArrow(): dragArrow event, but none has been started yet!?")
 	}
 	toX, toY := vp.screenshotPos(toPos)
-	toX += vp.gs.CropRect.Min.X
-	toY += vp.gs.CropRect.Min.Y
+	toX += vp.fs.CropRect.Min.X
+	toY += vp.fs.CropRect.Min.Y
 	vp.currentArrow.SetPoints(vp.currentArrow.From, image.Point{X: toX, Y: toY})
 	glog.V(2).Infof("dragArrow(): draw an arrow in %+v", vp.currentArrow)
-	vp.gs.ApplyFilters(false)
+	vp.fs.ApplyFilters(false)
 	vp.renderCache()
 	vp.Refresh()
 }
@@ -492,11 +512,26 @@ func (vp *ViewPort) dragLine(toPos fyne.Position) {
 		glog.Errorf("dragLine(): dragLine event, but none has been started yet!?")
 	}
 	toX, toY := vp.screenshotPos(toPos)
-	toX += vp.gs.CropRect.Min.X
-	toY += vp.gs.CropRect.Min.Y
+	toX += vp.fs.CropRect.Min.X
+	toY += vp.fs.CropRect.Min.Y
 	vp.currentStraightLine.SetPoints(vp.currentStraightLine.From, image.Point{X: toX, Y: toY})
 	glog.V(2).Infof("dragStraightLine(): draw an line in %+v", vp.currentStraightLine)
-	vp.gs.ApplyFilters(false)
+	vp.fs.ApplyFilters(false)
+	vp.renderCache()
+	vp.Refresh()
+}
+
+// dragDottedLine 当前窗口的左上角位置
+func (vp *ViewPort) dragDottedLine(toPos fyne.Position) {
+	if vp.currentDottedLine == nil {
+		glog.Errorf("dragLine(): dragDottedLine event, but none has been started yet!?")
+	}
+	toX, toY := vp.screenshotPos(toPos)
+	toX += vp.fs.CropRect.Min.X
+	toY += vp.fs.CropRect.Min.Y
+	vp.currentDottedLine.SetPoints(vp.currentDottedLine.From, image.Point{X: toX, Y: toY})
+	glog.V(2).Infof("dragDottedLine(): draw an dot line in %+v", vp.currentDottedLine)
+	vp.fs.ApplyFilters(false)
 	vp.renderCache()
 	vp.Refresh()
 }
@@ -509,8 +544,8 @@ func (vp *ViewPort) DragEnd() {
 	switch vp.currentOperation {
 	case NoOp, CropTopLeft, CropBottomRight, DrawText:
 		// Drag the image around, nothing to do to start.
-	case DrawCircle, DrawArrow, DrawStraightLine:
-		vp.gs.ApplyFilters(true)
+	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine:
+		vp.fs.ApplyFilters(true)
 	}
 	vp.dragEvents = nil
 	vp.dragSkipTap = true
@@ -518,11 +553,12 @@ func (vp *ViewPort) DragEnd() {
 	switch vp.currentOperation {
 	case NoOp, CropTopLeft, CropBottomRight, DrawText:
 		// Nothing to do
-	case DrawCircle, DrawArrow, DrawStraightLine:
+	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine:
 		vp.currentCircle = nil
 		vp.currentArrow = nil
 		vp.currentStraightLine = nil
-		vp.gs.status.SetText("Drawing done, use Control+Z to undo.")
+		vp.currentDottedLine = nil
+		vp.fs.status.SetText("Drawing done, use Control+Z to undo.")
 		vp.SetOp(NoOp)
 	}
 }
@@ -595,7 +631,7 @@ func (vp *ViewPort) consumeMouseMoveEvents() {
 }
 
 // ===============================================================
-// Implementation of operations on ViewPort
+// Implementation of operations on ViewPort, 鼠标跟随图标大小
 // ===============================================================
 var cursorSize = fyne.NewSize(32, 32)
 
@@ -623,22 +659,27 @@ func (vp *ViewPort) SetOp(op OperationType) {
 	case DrawCircle:
 		vp.cursor = vp.cursorDrawCircle
 		vp.cursor.Resize(cursorSize)
-		vp.gs.status.SetText("Click and drag to draw circle!")
+		vp.fs.status.SetText("Click and drag to draw circle!")
 
 	case DrawArrow:
 		vp.cursor = vp.cursorDrawArrow
 		vp.cursor.Resize(cursorSize)
-		vp.gs.status.SetText("Click and drag from start to end (point side) to draw an arrow!")
+		vp.fs.status.SetText("Click and drag from start to end (point side) to draw an arrow!")
 
 	case DrawText:
 		vp.cursor = vp.cursorDrawText
 		vp.cursor.Resize(cursorSize)
-		vp.gs.status.SetText("Click to define center location of text.")
+		vp.fs.status.SetText("Click to define center location of text.")
 
 	case DrawStraightLine:
 		vp.cursor = vp.cursorDrawLine
 		vp.cursor.Resize(cursorSize)
-		vp.gs.status.SetText("Click and drag from start to end (point side) to draw an line!")
+		vp.fs.status.SetText("Click and drag from start to end (point side) to draw an line!")
+
+	case DrawDottedLine:
+		vp.cursor = vp.cursorDrawDotLine
+		vp.cursor.Resize(cursorSize)
+		vp.fs.status.SetText("Click and drag from start to end (point side) to draw an dotted line!")
 	}
 }
 
@@ -662,7 +703,7 @@ func (vp *ViewPort) Tapped(ev *fyne.PointEvent) {
 	}
 	screenshotX, screenshotY := vp.screenshotPos(ev.Position)
 	screenshotPoint := image.Point{X: screenshotX, Y: screenshotY}
-	absolutePoint := screenshotPoint.Add(vp.gs.CropRect.Min)
+	absolutePoint := screenshotPoint.Add(vp.fs.CropRect.Min)
 
 	switch vp.currentOperation {
 	case NoOp:
@@ -672,7 +713,7 @@ func (vp *ViewPort) Tapped(ev *fyne.PointEvent) {
 	case CropBottomRight:
 		vp.cropBottomRight(screenshotX, screenshotY)
 	case DrawCircle, DrawArrow:
-		vp.gs.status.SetText("You must drag to draw a arrow/circle.")
+		vp.fs.status.SetText("You must drag to draw a arrow/circle.")
 	case DrawText:
 		vp.createTextFilter(absolutePoint)
 	}
@@ -694,12 +735,12 @@ func (vp *ViewPort) createTextFilter(center image.Point) {
 		"Pick a Color", "Select background color for text",
 		func(c color.Color) {
 			vp.BackgroundColor = c
-			vp.gs.SetColorPreference(BackgroundColorPreference, c)
+			vp.fs.SetColorPreference(BackgroundColorPreference, c)
 			bgColorRect.FillColor = vp.BackgroundColor
 			bgColorRect.Refresh()
 			form.Refresh()
 		},
-		vp.gs.Win)
+		vp.fs.Win)
 	backgroundEntry := container.NewHBox(
 		// Set color button.
 		widget.NewButtonWithIcon("", resources.ColorWheel, func() { picker.Show() }),
@@ -722,66 +763,66 @@ func (vp *ViewPort) createTextFilter(center image.Point) {
 				fSize, err := strconv.ParseFloat(fontSize.Text, 64)
 				if err != nil {
 					glog.Errorf("Error parsing the font size given: %q", fontSize.Text)
-					vp.gs.status.SetText(fmt.Sprintf("Error parsing the font size given: %q", fontSize.Text))
+					vp.fs.status.SetText(fmt.Sprintf("Error parsing the font size given: %q", fontSize.Text))
 					return
 				}
 				vp.FontSize = fSize
-				vp.gs.App.Preferences().SetFloat(FontSizePreference, fSize)
+				vp.fs.App.Preferences().SetFloat(FontSizePreference, fSize)
 				textFilter := filters.NewText(textEntry.Text, center, vp.DrawingColor, vp.BackgroundColor, fSize)
-				vp.gs.Filters = append(vp.gs.Filters, textFilter)
-				vp.gs.ApplyFilters(true)
-				vp.gs.status.SetText("Text drawn, use Control+Z to undo.")
+				vp.fs.Filters = append(vp.fs.Filters, textFilter)
+				vp.fs.ApplyFilters(true)
+				vp.fs.status.SetText("Text drawn, use Control+Z to undo.")
 			}
-		}, vp.gs.Win)
+		}, vp.fs.Win)
 	form.Resize(fyne.NewSize(500, 300))
 	form.Show()
-	vp.gs.Win.Canvas().Focus(textEntry)
+	vp.fs.Win.Canvas().Focus(textEntry)
 }
 
 // cropTopLeft will crop the screenshot on this position.
 func (vp *ViewPort) cropTopLeft(x, y int) {
-	vp.gs.CropRect.Min = vp.gs.CropRect.Min.Add(image.Point{X: x, Y: y})
-	vp.gs.ApplyFilters(true)
+	vp.fs.CropRect.Min = vp.fs.CropRect.Min.Add(image.Point{X: x, Y: y})
+	vp.fs.ApplyFilters(true)
 	vp.viewX, vp.viewY = 0, 0 // Move view to cropped corner.
-	glog.V(2).Infof("cropTopLeft: new cropRect is %+v", vp.gs.CropRect)
+	glog.V(2).Infof("cropTopLeft: new cropRect is %+v", vp.fs.CropRect)
 	vp.postCrop()
 }
 
 // cropBottomRight will crop the screenshot on this position.
 func (vp *ViewPort) cropBottomRight(x, y int) {
-	vp.gs.CropRect.Max = vp.gs.CropRect.Max.Sub(
-		image.Point{X: vp.gs.CropRect.Dx() - x, Y: vp.gs.CropRect.Dy() - y})
-	vp.gs.ApplyFilters(true)
+	vp.fs.CropRect.Max = vp.fs.CropRect.Max.Sub(
+		image.Point{X: vp.fs.CropRect.Dx() - x, Y: vp.fs.CropRect.Dy() - y})
+	vp.fs.ApplyFilters(true)
 	vp.viewX, vp.viewY = x-vp.viewW, y-vp.viewH // Move view to cropped corner.
 	vp.postCrop()
 }
 
 func (vp *ViewPort) cropReset() {
-	vp.viewX += vp.gs.CropRect.Min.X
-	vp.viewY += vp.gs.CropRect.Min.Y
-	vp.gs.CropRect = vp.gs.OriginalScreenshot.Rect
-	vp.gs.ApplyFilters(true)
+	vp.viewX += vp.fs.CropRect.Min.X
+	vp.viewY += vp.fs.CropRect.Min.Y
+	vp.fs.CropRect = vp.fs.OriginalScreenshot.Rect
+	vp.fs.ApplyFilters(true)
 	vp.postCrop()
-	vp.gs.status.SetText(fmt.Sprintf("Reset to original screenshot of size %d x %d pixels.",
-		vp.gs.CropRect.Dx(), vp.gs.CropRect.Dy()))
+	vp.fs.status.SetText(fmt.Sprintf("Reset to original screenshot of size %d x %d pixels.",
+		vp.fs.CropRect.Dx(), vp.fs.CropRect.Dy()))
 }
 
 // postCrop refreshes elements after a change in crop.
 func (vp *ViewPort) postCrop() {
 	// Full image fits the view port in any of the dimensions, then we center the image.
-	if vp.gs.CropRect.Dx() < vp.viewW {
-		vp.viewX = -(vp.viewW - vp.gs.CropRect.Dx()) / 2
+	if vp.fs.CropRect.Dx() < vp.viewW {
+		vp.viewX = -(vp.viewW - vp.fs.CropRect.Dx()) / 2
 	}
-	if vp.gs.CropRect.Dy() < vp.viewH {
-		vp.viewY = -(vp.viewH - vp.gs.CropRect.Dy()) / 2
+	if vp.fs.CropRect.Dy() < vp.viewH {
+		vp.viewY = -(vp.viewH - vp.fs.CropRect.Dy()) / 2
 	}
 
 	vp.updateViewSize()
 	vp.renderCache()
 	vp.Refresh()
-	vp.gs.miniMap.updateViewPortRect()
-	vp.gs.miniMap.Refresh()
-	vp.gs.status.SetText(fmt.Sprintf("New crop: {%d, %d} - {%d, %d} of original screen, %d x %d pixels.",
-		vp.gs.CropRect.Min.X, vp.gs.CropRect.Min.Y, vp.gs.CropRect.Max.X, vp.gs.CropRect.Max.Y,
-		vp.gs.CropRect.Dx(), vp.gs.CropRect.Dy()))
+	vp.fs.miniMap.updateViewPortRect()
+	vp.fs.miniMap.Refresh()
+	vp.fs.status.SetText(fmt.Sprintf("New crop: {%d, %d} - {%d, %d} of original screen, %d x %d pixels.",
+		vp.fs.CropRect.Min.X, vp.fs.CropRect.Min.Y, vp.fs.CropRect.Max.X, vp.fs.CropRect.Max.Y,
+		vp.fs.CropRect.Dx(), vp.fs.CropRect.Dy()))
 }

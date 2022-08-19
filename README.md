@@ -148,6 +148,18 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 <img src="image/image-20210930175745365.png" alt="image-20210930175745365" style="zoom: 33%;" />
 
+### `v1.0.8`
+
+支持虚线功能
+
+<img src="image/image-20220817211535625.png" alt="image-20220817211535625" style="zoom: 50%;" />
+
+### `v1.0.9`
+
+虚线间隔支持设置
+
+![img.png](image/img.png)
+
 
 
 ## 加入我们
@@ -157,6 +169,9 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 扫描二维码，拉你进入`FireShotGo`开发大家庭，一起学习，一起进步！
 
 ![](image/%E5%BE%AE%E4%BF%A1%E4%BA%8C%E7%BB%B4%E7%A0%81.png)
+
+
+
 
 ## `TODO`
 
@@ -168,7 +183,7 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 - [x] 支持对主题字体设置
 - [x] 支持云存储-谷歌云、七牛云
 - [ ] 主题字体支持动态更改
-- [ ] 支持虚线绘制
+- [x] 支持虚线绘制
 - [ ] 支持矩形框功能
 - [ ] 支持鼠标截图功能
 - [x] 支持选择屏幕功能
