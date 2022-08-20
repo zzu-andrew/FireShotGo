@@ -163,6 +163,13 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 ![img.png](image/shield_block.png)
 
 
+### `v1.0.11`
+
+增加矩形框功能，用于框住截图中的重点信息，颜色可以在颜色块中进行设置，左键电击之后使用鼠标进行拖拽即可
+
+![img.png](image/rectangle.png)
+
+
 ## 加入我们
 
 如果对go语言感兴趣或者想要学习go语言`Fyne` `gui`编程的可以添加微信！
