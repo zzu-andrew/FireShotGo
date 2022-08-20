@@ -39,6 +39,10 @@ var DrawDottedLine = fyne.NewStaticResource("", embedDrawDotted)
 var embedDrawShieldBlock []byte
 var DrawShieldBlock = fyne.NewStaticResource("", embedDrawShieldBlock)
 
+//go:embed draw_rectangle.png
+var embedDrawRectangle []byte
+var DrawRectangle = fyne.NewStaticResource("", embedDrawRectangle)
+
 //go:embed draw_text.png
 var embedDrawText []byte
 var DrawText = fyne.NewStaticResource("", embedDrawText)
@@ -58,10 +62,6 @@ var ColorWheel = fyne.NewStaticResource("ColorWheel", embedColorWheel)
 //go:embed fire.png
 var embedGoShotIconPng []byte
 var GoShotIconPng = fyne.NewStaticResource("GoShotIconPng", embedGoShotIconPng)
-
-//go:embed fire.png
-var embedGoShotIconIco []byte
-var GoShotIconIco = fyne.NewStaticResource("GoShotIconIco", embedGoShotIconIco)
 
 //go:embed weixin.png
 var weChatPic []byte
