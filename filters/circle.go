@@ -34,12 +34,15 @@ func NewCircle(dim image.Rectangle, color color.Color, thickness float64) *Circl
 
 func (c *Circle) SetDim(dim image.Rectangle) {
 	c.Dim = dim
+	// 取出中心位置
 	center := c.Dim.Min.Add(c.Dim.Max).Div(2)
 	c.Center = Vec2{float64(center.X), float64(center.Y)}
+	// 计算出矢量外边界
 	c.outerRadius = Vec2{
 		float64(c.Dim.Max.X) - c.Center.X(),
 		float64(c.Dim.Max.Y) - c.Center.Y(),
 	}
+	// 计算出矢量内边界
 	c.innerRadius = Vec2{
 		c.outerRadius.X() - c.Thickness,
 		c.outerRadius.Y() - c.Thickness,

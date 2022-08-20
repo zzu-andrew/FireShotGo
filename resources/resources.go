@@ -35,6 +35,10 @@ var DrawLine = fyne.NewStaticResource("", embedDrawLine)
 var embedDrawDotted []byte
 var DrawDottedLine = fyne.NewStaticResource("", embedDrawDotted)
 
+//go:embed shield_block.png
+var embedDrawShieldBlock []byte
+var DrawShieldBlock = fyne.NewStaticResource("", embedDrawShieldBlock)
+
 //go:embed draw_text.png
 var embedDrawText []byte
 var DrawText = fyne.NewStaticResource("", embedDrawText)
