@@ -54,7 +54,8 @@ type ViewPort struct {
 
 	// Fyne objects.
 	minSize fyne.Size
-	raster  *canvas.Raster
+	// 样图，示例图
+	raster *canvas.Raster
 
 	// 鼠标后面跟随的图标
 	cursor                                   *canvas.Image
@@ -212,6 +213,7 @@ func (vp *ViewPort) Objects() []fyne.CanvasObject {
 	if vp.cursor == nil || !vp.mouseIn {
 		return []fyne.CanvasObject{vp.raster}
 	}
+	// 鼠标在视图上，并且鼠标后面跟随的图标已经初始化完成，预览图就返回当前的预览图和图标的叠加
 	return []fyne.CanvasObject{vp.raster, vp.cursor}
 }
 
@@ -471,10 +473,11 @@ func (vp *ViewPort) consumeDragEvents() {
 // doDragThrottled is called sequentially, dropping drag events in between each call. So
 // each time it is called with the latest DragEvent, dropping those that happened in between
 // the previous call.
+// 随着鼠标拖动实时更新end point
 func (vp *ViewPort) doDragThrottled(ev *fyne.DragEvent) {
 	switch vp.currentOperation {
 	case NoOp, CropTopLeft, CropBottomRight, DrawText:
-		// Drag the image around
+		// 当NoOp时，裁剪，或者文本时，如果单击鼠标进行拖动就拖动图片
 		vp.dragViewDelta(ev.Position.Subtract(vp.dragStart))
 	case DrawCircle:
 		vp.dragCircle(ev.Position)
@@ -713,6 +716,7 @@ func (vp *ViewPort) consumeMouseMoveEvents() {
 var cursorSize = fyne.NewSize(32, 32)
 
 // SetOp changes the current op on the edit window. It interrupts any dragging event going on.
+// 在编辑窗口选择需要进行的操作，比如选择绘制直线
 func (vp *ViewPort) SetOp(op OperationType) {
 	if vp.dragEvents != nil {
 		vp.DragEnd()
