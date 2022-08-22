@@ -61,11 +61,13 @@ type ViewPort struct {
 	cursorCropTopLeft, cursorCropBottomRight *canvas.Image
 
 	// 绘图工具区域
-	cursorDrawCircle  *canvas.Image
-	cursorDrawArrow   *canvas.Image
-	cursorDrawText    *canvas.Image
-	cursorDrawLine    *canvas.Image
-	cursorDrawDotLine *canvas.Image
+	cursorDrawCircle    *canvas.Image
+	cursorDrawArrow     *canvas.Image
+	cursorDrawText      *canvas.Image
+	cursorDrawLine      *canvas.Image
+	cursorDrawDotLine   *canvas.Image
+	cursorShieldBlock   *canvas.Image
+	cursorDrawRectangle *canvas.Image
 
 	// 鼠标是否在视图窗口上
 	mouseIn bool
@@ -87,6 +89,8 @@ type ViewPort struct {
 	currentArrow        *filters.Arrow        // 开始绘制箭头, 只有设置 currentOperation==DrawArrow 之后才能使用
 	currentStraightLine *filters.StraightLine // 开始绘制直线 只有设置了 currentOperation==DrawStraightLine 之后才能使用
 	currentDottedLine   *filters.DottedLine   // 开始绘制虚线
+	currentShieldBlock  *filters.ShieldBlock  // 开始绘制矩形遮挡块
+	currentRectangle    *filters.Rectangle    // 开始绘制矩形
 
 	fyne.ShortcutHandler
 }
@@ -110,6 +114,10 @@ const (
 	DrawStraightLine
 	// DrawDottedLine 绘制虚线
 	DrawDottedLine
+	// DrawShieldBlock 绘制遮挡块
+	DrawShieldBlock
+	// DrawRectangle 绘制矩形
+	DrawRectangle
 )
 
 // Ensure ViewPort implements the following interfaces.
@@ -141,6 +149,8 @@ func NewViewPort(gs *FireShotGO) (vp *ViewPort) {
 		cursorDrawText:        canvas.NewImageFromResource(resources.DrawText),
 		cursorDrawLine:        canvas.NewImageFromResource(resources.DrawLine),
 		cursorDrawDotLine:     canvas.NewImageFromResource(resources.DrawDottedLine),
+		cursorShieldBlock:     canvas.NewImageFromResource(resources.DrawShieldBlock),
+		cursorDrawRectangle:   canvas.NewImageFromResource(resources.DrawRectangle),
 		// 记录鼠标位置信息
 		mouseMoveEvents: make(chan fyne.Position, 1000),
 
@@ -392,6 +402,23 @@ func (vp *ViewPort) Dragged(ev *fyne.DragEvent) {
 
 			vp.fs.Filters = append(vp.fs.Filters, vp.currentDottedLine)
 			vp.fs.ApplyFilters(false)
+		case DrawShieldBlock:
+			glog.V(2).Infof("Tapped(): draw a shield block starting at (%d, %d)", startX, startY)
+			vp.currentShieldBlock = filters.NewShieldBlock(image.Rectangle{
+				Min: image.Point{X: startX, Y: startY},
+				Max: image.Point{X: startX + 5, Y: startY + 5},
+			}, vp.DrawingColor)
+			vp.fs.Filters = append(vp.fs.Filters, vp.currentShieldBlock)
+			vp.fs.ApplyFilters(false)
+		case DrawRectangle:
+			glog.V(2).Infof("Tapped(): draw a rectangle starting at (%d, %d)", startX, startY)
+			vp.currentRectangle = filters.NewRectangle(image.Rectangle{
+				Min: image.Point{X: startX, Y: startY},
+				Max: image.Point{X: startX + 5, Y: startY + 5},
+			}, vp.DrawingColor,
+				vp.Thickness)
+			vp.fs.Filters = append(vp.fs.Filters, vp.currentRectangle)
+			vp.fs.ApplyFilters(false)
 		}
 
 		return // No need to process first event.
@@ -457,6 +484,10 @@ func (vp *ViewPort) doDragThrottled(ev *fyne.DragEvent) {
 		vp.dragLine(ev.Position)
 	case DrawDottedLine:
 		vp.dragDottedLine(ev.Position)
+	case DrawShieldBlock:
+		vp.dragShieldBlock(ev.Position)
+	case DrawRectangle:
+		vp.dragRectangle(ev.Position)
 	}
 }
 
@@ -536,6 +567,50 @@ func (vp *ViewPort) dragDottedLine(toPos fyne.Position) {
 	vp.Refresh()
 }
 
+// dragShieldBlock 当前窗口的左上角位置
+func (vp *ViewPort) dragShieldBlock(toPos fyne.Position) {
+	if vp.currentShieldBlock == nil {
+		glog.Errorf("dragShieldBlock(): dragShieldBlock event, but none has been started yet!?")
+	}
+	startX, startY := vp.screenshotPos(vp.dragStart)
+	startX += vp.fs.CropRect.Min.X
+	startY += vp.fs.CropRect.Min.Y
+	toX, toY := vp.screenshotPos(toPos)
+	toX += vp.fs.CropRect.Min.X
+	toY += vp.fs.CropRect.Min.Y
+	// 设置进去的rect已经保证max > min
+	vp.currentShieldBlock.SetRect(image.Rectangle{
+		Min: image.Point{X: startX, Y: startY},
+		Max: image.Point{X: toX, Y: toY},
+	}.Canon())
+	glog.V(2).Infof("dragCircle(): draw a circle in %+v", vp.currentShieldBlock)
+	vp.fs.ApplyFilters(false)
+	vp.renderCache()
+	vp.Refresh()
+}
+
+// dragShieldBlock 当前窗口的左上角位置
+func (vp *ViewPort) dragRectangle(toPos fyne.Position) {
+	if vp.currentRectangle == nil {
+		glog.Errorf("dragRectangle(): dragRectangle event, but none has been started yet!?")
+	}
+	startX, startY := vp.screenshotPos(vp.dragStart)
+	startX += vp.fs.CropRect.Min.X
+	startY += vp.fs.CropRect.Min.Y
+	toX, toY := vp.screenshotPos(toPos)
+	toX += vp.fs.CropRect.Min.X
+	toY += vp.fs.CropRect.Min.Y
+	// 设置进去的rect已经保证max > min
+	vp.currentRectangle.SetRect(image.Rectangle{
+		Min: image.Point{X: startX, Y: startY},
+		Max: image.Point{X: toX, Y: toY},
+	}.Canon())
+	glog.V(2).Infof("dragCircle(): draw a circle in %+v", vp.currentRectangle)
+	vp.fs.ApplyFilters(false)
+	vp.renderCache()
+	vp.Refresh()
+}
+
 // DragEnd implements fyne.Draggable
 func (vp *ViewPort) DragEnd() {
 	glog.V(2).Infof("DragEnd(), dragEvents=%v", vp.dragEvents != nil)
@@ -544,7 +619,7 @@ func (vp *ViewPort) DragEnd() {
 	switch vp.currentOperation {
 	case NoOp, CropTopLeft, CropBottomRight, DrawText:
 		// Drag the image around, nothing to do to start.
-	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine:
+	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine, DrawShieldBlock, DrawRectangle:
 		vp.fs.ApplyFilters(true)
 	}
 	vp.dragEvents = nil
@@ -553,11 +628,13 @@ func (vp *ViewPort) DragEnd() {
 	switch vp.currentOperation {
 	case NoOp, CropTopLeft, CropBottomRight, DrawText:
 		// Nothing to do
-	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine:
+	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine, DrawShieldBlock, DrawRectangle:
 		vp.currentCircle = nil
 		vp.currentArrow = nil
 		vp.currentStraightLine = nil
 		vp.currentDottedLine = nil
+		vp.currentShieldBlock = nil
+		vp.currentRectangle = nil
 		vp.fs.status.SetText("Drawing done, use Control+Z to undo.")
 		vp.SetOp(NoOp)
 	}
@@ -680,10 +757,21 @@ func (vp *ViewPort) SetOp(op OperationType) {
 		vp.cursor = vp.cursorDrawDotLine
 		vp.cursor.Resize(cursorSize)
 		vp.fs.status.SetText("Click and drag from start to end (point side) to draw an dotted line!")
+
+	case DrawShieldBlock:
+		vp.cursor = vp.cursorShieldBlock
+		vp.cursor.Resize(cursorSize)
+		vp.fs.status.SetText("Click and drag from start to end (point side) to draw an shield block!")
+
+	case DrawRectangle:
+		vp.cursor = vp.cursorDrawRectangle
+		vp.cursor.Resize(cursorSize)
+		vp.fs.status.SetText("Click and drag from start to end (point side) to draw an rectangle!")
 	}
+
 }
 
-// screenshotCoord returns the screenshot position for the given
+// screenshotPos returns the screenshot position for the given
 // position in the canvas.
 func (vp *ViewPort) screenshotPos(pos fyne.Position) (x, y int) {
 	size := vp.Size()
@@ -712,8 +800,8 @@ func (vp *ViewPort) Tapped(ev *fyne.PointEvent) {
 		vp.cropTopLeft(screenshotX, screenshotY)
 	case CropBottomRight:
 		vp.cropBottomRight(screenshotX, screenshotY)
-	case DrawCircle, DrawArrow:
-		vp.fs.status.SetText("You must drag to draw a arrow/circle.")
+	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine, DrawShieldBlock, DrawRectangle:
+		vp.fs.status.SetText("You must drag to draw something ...")
 	case DrawText:
 		vp.createTextFilter(absolutePoint)
 	}

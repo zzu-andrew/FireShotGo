@@ -51,6 +51,12 @@ func (fs *FireShotGO) BuildEditWindow() {
 	circleButton := widget.NewButton("圆 (alt+c)", func() { fs.viewPort.SetOp(DrawCircle) })
 	circleButton.SetIcon(resources.DrawCircle)
 
+	shieldBlockButton := widget.NewButton("遮挡块 (alt+b)", func() { fs.viewPort.SetOp(DrawShieldBlock) })
+	shieldBlockButton.SetIcon(resources.DrawShieldBlock)
+
+	rectangleButton := widget.NewButton("矩形框 (alt+r)", func() { fs.viewPort.SetOp(DrawRectangle) })
+	rectangleButton.SetIcon(resources.DrawRectangle)
+
 	fs.thicknessEntry = &widget.Entry{Validator: validation.NewRegexp(`\d`, "Must contain a number")}
 	fs.thicknessEntry.SetPlaceHolder(fmt.Sprintf("%g", fs.viewPort.Thickness))
 	fs.thicknessEntry.OnChanged = func(str string) {
@@ -83,6 +89,8 @@ func (fs *FireShotGO) BuildEditWindow() {
 		fs.setDottedLineSpacing(),
 		widget.NewSeparator(),
 		circleButton,
+		shieldBlockButton,
+		rectangleButton,
 		container.NewHBox(
 			widget.NewLabel("裁剪:"),
 			cropTopLeft,

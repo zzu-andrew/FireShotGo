@@ -160,6 +160,18 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 
 ![img.png](image/img.png)
 
+### `v1.0.10`
+
+增加遮挡块功能，可以使用遮挡块对需要遮挡的地方进行遮挡，颜色可以在颜色块中进行设置，左键电击之后使用鼠标进行拖拽即可
+
+![img.png](image/shield_block.png)
+
+
+### `v1.0.11`
+
+增加矩形框功能，用于框住截图中的重点信息，颜色可以在颜色块中进行设置，左键电击之后使用鼠标进行拖拽即可
+
+![img.png](image/rectangle.png)
 
 
 ## 加入我们
@@ -167,6 +179,8 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 如果对go语言感兴趣或者想要学习go语言`Fyne` `gui`编程的可以添加微信！
 
 扫描二维码，拉你进入`FireShotGo`开发大家庭，一起学习，一起进步！
+
+
 
 ![](image/%E5%BE%AE%E4%BF%A1%E4%BA%8C%E7%BB%B4%E7%A0%81.png)
 
@@ -184,6 +198,7 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 - [x] 支持云存储-谷歌云、七牛云
 - [ ] 主题字体支持动态更改
 - [x] 支持虚线绘制
+- [x] 支持虚线间隔设置
 - [ ] 支持矩形框功能
 - [ ] 支持鼠标截图功能
 - [x] 支持选择屏幕功能
