@@ -40,7 +40,7 @@ func (fs *FireShotGO) BuildEditWindow() {
 		})
 	cropBottomRight := widget.NewButtonWithIcon("", resources.CropBottomRight,
 		func() {
-			fs.status.SetText("点击裁剪的左下角")
+			fs.status.SetText("点击裁剪的右下角")
 			fs.viewPort.SetOp(CropBottomRight)
 		})
 	cropReset := widget.NewButtonWithIcon("", resources.Reset, func() {

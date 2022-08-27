@@ -30,6 +30,10 @@ sudo apt-get install libgtk-3-dev
 ### `Windows`
 
 在`windows`上需要安装配置`MinGW`环境，并配置`go`语言开发环境
+如果想去除windows上运行时出现的控制台，在编译时需要指定参数：
+```bash
+go build -ldflags -H=windowsgui
+```
 
 ### 使用库
 
