@@ -68,6 +68,7 @@ type ViewPort struct {
 	cursorDrawDotLine   *canvas.Image
 	cursorShieldBlock   *canvas.Image
 	cursorDrawRectangle *canvas.Image
+	cursorDrawPen       *canvas.Image
 
 	// 鼠标是否在视图窗口上
 	mouseIn bool
@@ -78,7 +79,8 @@ type ViewPort struct {
 	cache *image.RGBA
 
 	// Dynamic dragging
-	dragEvents                     chan *fyne.DragEvent
+	dragEvents chan *fyne.DragEvent
+	// 记录首次开始拖拽时的位置
 	dragStart                      fyne.Position
 	dragStartViewX, dragStartViewY int
 	dragSkipTap                    bool // Set at DragEnd(), because the end of the drag also triggers a tap.
@@ -91,6 +93,7 @@ type ViewPort struct {
 	currentDottedLine   *filters.DottedLine   // 开始绘制虚线
 	currentShieldBlock  *filters.ShieldBlock  // 开始绘制矩形遮挡块
 	currentRectangle    *filters.Rectangle    // 开始绘制矩形
+	currentPen          *filters.Pen          // 开始使用画笔进行绘制
 
 	fyne.ShortcutHandler
 }
@@ -118,6 +121,8 @@ const (
 	DrawShieldBlock
 	// DrawRectangle 绘制矩形
 	DrawRectangle
+	// DrawPen 使用画笔进行绘制
+	DrawPen
 )
 
 // Ensure ViewPort implements the following interfaces.
@@ -151,6 +156,7 @@ func NewViewPort(gs *FireShotGO) (vp *ViewPort) {
 		cursorDrawDotLine:     canvas.NewImageFromResource(resources.DrawDottedLine),
 		cursorShieldBlock:     canvas.NewImageFromResource(resources.DrawShieldBlock),
 		cursorDrawRectangle:   canvas.NewImageFromResource(resources.DrawRectangle),
+		cursorDrawPen:         canvas.NewImageFromResource(resources.DrawPen),
 		// 记录鼠标位置信息
 		mouseMoveEvents: make(chan fyne.Position, 1000),
 
@@ -350,6 +356,7 @@ func bgPattern(x, y int) color.RGBA {
 // ===============================================================
 
 // Dragged implements fyne.Draggable
+// 拖动时候将对应图像实现放入到fileter中
 func (vp *ViewPort) Dragged(ev *fyne.DragEvent) {
 	if vp.dragEvents == nil {
 		glog.V(2).Infof("Dragged(): start new drag for Op=%d", vp.currentOperation)
@@ -418,6 +425,12 @@ func (vp *ViewPort) Dragged(ev *fyne.DragEvent) {
 			}, vp.DrawingColor,
 				vp.Thickness)
 			vp.fs.Filters = append(vp.fs.Filters, vp.currentRectangle)
+			vp.fs.ApplyFilters(false)
+		case DrawPen:
+			glog.V(2).Infof("Tapped(): draw a line at (%d, %d)", startX, startY)
+			vp.currentPen = filters.NewPen(image.Point{startX, startY}, vp.DrawingColor,
+				vp.Thickness)
+			vp.fs.Filters = append(vp.fs.Filters, vp.currentPen)
 			vp.fs.ApplyFilters(false)
 		}
 
@@ -488,6 +501,8 @@ func (vp *ViewPort) doDragThrottled(ev *fyne.DragEvent) {
 		vp.dragShieldBlock(ev.Position)
 	case DrawRectangle:
 		vp.dragRectangle(ev.Position)
+	case DrawPen:
+		vp.DragPen(ev.Position)
 	}
 }
 
@@ -567,6 +582,23 @@ func (vp *ViewPort) dragDottedLine(toPos fyne.Position) {
 	vp.Refresh()
 }
 
+func (vp *ViewPort) DragPen(toPos fyne.Position) {
+	if vp.currentPen == nil {
+		glog.Errorf("dragPen(): dragPen event, but none has been started yet!?")
+	}
+	toX, toY := vp.screenshotPos(toPos)
+	toX += vp.fs.CropRect.Min.X
+	toY += vp.fs.CropRect.Min.Y
+	// 设置进去的rect已经保证max > min
+	vp.currentPen.SetPoints(image.Point{
+		toX, toY,
+	})
+	glog.V(2).Infof("dragPen(): draw a point in %+v", vp.currentPen)
+	vp.fs.ApplyFilters(false)
+	vp.renderCache()
+	vp.Refresh()
+}
+
 // dragShieldBlock 当前窗口的左上角位置
 func (vp *ViewPort) dragShieldBlock(toPos fyne.Position) {
 	if vp.currentShieldBlock == nil {
@@ -619,7 +651,7 @@ func (vp *ViewPort) DragEnd() {
 	switch vp.currentOperation {
 	case NoOp, CropTopLeft, CropBottomRight, DrawText:
 		// Drag the image around, nothing to do to start.
-	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine, DrawShieldBlock, DrawRectangle:
+	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine, DrawShieldBlock, DrawRectangle, DrawPen:
 		vp.fs.ApplyFilters(true)
 	}
 	vp.dragEvents = nil
@@ -628,6 +660,10 @@ func (vp *ViewPort) DragEnd() {
 	switch vp.currentOperation {
 	case NoOp, CropTopLeft, CropBottomRight, DrawText:
 		// Nothing to do
+	case DrawPen:
+		vp.fs.status.SetText("Drawing done, use Control+Z to undo.")
+		vp.SetOp(NoOp)
+
 	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine, DrawShieldBlock, DrawRectangle:
 		vp.currentCircle = nil
 		vp.currentArrow = nil
@@ -767,6 +803,10 @@ func (vp *ViewPort) SetOp(op OperationType) {
 		vp.cursor = vp.cursorDrawRectangle
 		vp.cursor.Resize(cursorSize)
 		vp.fs.status.SetText("Click and drag from start to end (point side) to draw an rectangle!")
+	case DrawPen:
+		vp.cursor = vp.cursorDrawPen
+		vp.cursor.Resize(cursorSize)
+		vp.fs.status.SetText("Click and drag from start to end (point side) to draw some points!")
 	}
 
 }
@@ -800,7 +840,7 @@ func (vp *ViewPort) Tapped(ev *fyne.PointEvent) {
 		vp.cropTopLeft(screenshotX, screenshotY)
 	case CropBottomRight:
 		vp.cropBottomRight(screenshotX, screenshotY)
-	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine, DrawShieldBlock, DrawRectangle:
+	case DrawCircle, DrawArrow, DrawStraightLine, DrawDottedLine, DrawShieldBlock, DrawRectangle, DrawPen:
 		vp.fs.status.SetText("You must drag to draw something ...")
 	case DrawText:
 		vp.createTextFilter(absolutePoint)

@@ -45,10 +45,11 @@ type FireShotGO struct {
 	// 截图时间记录
 	ScreenshotTime time.Time
 
-	// 编辑之后的截图信息
+	// 编辑之后的截图信息，每添加一个fileter这里都进行叠加一次
 	Screenshot *image.RGBA // The edited/composed screenshot
 	CropRect   image.Rectangle
-	Filters    []ImageFilter // Configured filters: each filter is one edition to the image.
+	// 所有的fileter都添加到这里
+	Filters []ImageFilter // Configured filters: each filter is one edition to the image.
 
 	// UI 元素
 	// zoomEntry 缩放窗口控件 thicknessEntry 设置线条粗细的控件
@@ -97,8 +98,10 @@ type ImageFilter interface {
 // and regenerate Screenshot.
 // If full == true, regenerates full Screenshot. If false, regenerates only
 // visible area.
+// 绘制预览图
 func (fs *FireShotGO) ApplyFilters(full bool) {
 	glog.V(2).Infof("ApplyFilters: %d filters", len(fs.Filters))
+	// 图像叠加
 	filteredImage := image.Image(fs.OriginalScreenshot)
 	for _, filter := range fs.Filters {
 		filteredImage = filter.Apply(filteredImage)
@@ -160,9 +163,6 @@ func (gs *FireShotGO) MakeScreenshot() error {
 		// 已经支持多屏幕截图，这里给出屏幕个数
 		glog.Warningf("检测到用户屏幕个数: %d，请在文件->截屏中配置需要截屏的序号", n)
 	}
-
-	// TODO 支持鼠标绘制之后进行
-	// TODO 支持矩形绘制
 
 	if gs.displayIndex < 0 || gs.displayIndex > n {
 		glog.Fatalf("displayIndex 非法请确认")
