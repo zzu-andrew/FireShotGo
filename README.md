@@ -174,6 +174,12 @@ func (*ShanGShouJianSongTheme) Size(n fyne.ThemeSizeName) float32 {
 ![img.png](image/rectangle.png)
 
 
+### `v1.0.12`
+
+增加画笔功能，目前是使用单协程实现，性能比较差，后期间计算单独协程中进行，提升出图的速度
+
+![img.png](image/pencel.png)
+
 ## 加入我们
 
 如果对go语言感兴趣或者想要学习go语言`Fyne` `gui`编程的可以添加微信！
