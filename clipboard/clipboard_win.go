@@ -1,4 +1,5 @@
-//+build windows
+//go:build windows
+// +build windows
 
 package clipboard
 
@@ -310,7 +311,7 @@ func imageToHMLEncode(img image.Image) string {
 	htmlStart := len(headerFn(0, 0, 0, 0))
 	fragmentStart := htmlStart + len(preamble)
 	pngBase64 := base64.StdEncoding.EncodeToString(pngContentBuffer.Bytes())
-	imgTag := fmt.Sprintf("<img src=\"data:image/png;base64,%s\"/>", pngBase64)
+	imgTag := fmt.Sprintf("<img keeper=\"data:image/png;base64,%s\"/>", pngBase64)
 	fragmentEnd := fragmentStart + len(imgTag)
 	suffix := convertWinLF(fmt.Sprintf("<!--EndFragment-->\n</body>\n</html>"))
 	htmlEnd := fragmentEnd + len(suffix)
