@@ -223,6 +223,7 @@ func (fs *FireShotGO) colorPicker() {
 func (fs *FireShotGO) MakeFireShotMenu() *fyne.MainMenu {
 	// 构建文件菜单
 	menuFile := fyne.NewMenu("文件",
+		fyne.NewMenuItem("打开", func() { fs.OpenImage() }),
 		fyne.NewMenuItem("保存 (ctrl+s)", func() { fs.SaveImage() }),
 		fyne.NewMenuItem("截屏", func() { fs.DelayedScreenshotForm() }),
 	) // Quit is added automatically.

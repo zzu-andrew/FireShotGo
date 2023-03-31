@@ -51,12 +51,12 @@ type Manager struct {
 //
 // It requires the following callbacks to be defined:
 //
-// * setToken: if the token that gives temporary permission to access Google Drive is updated, this
-//   function is called. This token can be saved re-used later on, by passing it in the `token` parameter.
-//   If nil, it won't be called, and the token will be "forgotten" at the next instance of the program.
-// * enterAuthorization: when a new token is required, the Manager will open the browser with Google
-//   to ask for a renewed authentication. Then it will call this function to have a UI for the user
-//   to paste the authorization string given by Google.
+//   - setToken: if the token that gives temporary permission to access Google Drive is updated, this
+//     function is called. This token can be saved re-used later on, by passing it in the `token` parameter.
+//     If nil, it won't be called, and the token will be "forgotten" at the next instance of the program.
+//   - enterAuthorization: when a new token is required, the Manager will open the browser with Google
+//     to ask for a renewed authentication. Then it will call this function to have a UI for the user
+//     to paste the authorization string given by Google.
 //
 // May return an error if application credentials are wrong.
 func New(ctx context.Context, path []string, token string, setToken func(token string), enterAuthorization func() string) (*Manager, error) {
@@ -234,7 +234,7 @@ func openurl(url string) error {
 	switch runtime.GOOS {
 	case "linux":
 		return exec.Command("xdg-open", url).Start()
-	case "windows":
+	case "window":
 		return exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
 	case "darwin":
 		return exec.Command("open", url).Start()

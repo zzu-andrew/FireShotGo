@@ -284,6 +284,56 @@ func (gs *FireShotGO) SaveImage() {
 	fileSave.Show()
 }
 
+// OpenImage opens a file save dialog box to save the currently edited screenshot.
+func (gs *FireShotGO) OpenImage() {
+	glog.V(2).Info("FireShotGO.OpenImage")
+	var fileOpen *dialog.FileDialog
+	fileOpen = dialog.NewFileOpen(
+		func(reader fyne.URIReadCloser, err error) {
+			if err != nil {
+				glog.Errorf("Failed to save image: %s", err)
+				gs.status.SetText(fmt.Sprintf("Failed to save image: %s", err))
+				return
+			}
+			if reader == nil {
+				gs.status.SetText("Save file cancelled.")
+				return
+			}
+			glog.V(2).Infof("SaveImage(): URI=%s", reader.URI())
+			defer func() { _ = reader.Close() }()
+
+			// Always default to previous path used:
+			defaultPath := path.Dir(reader.URI().Path())
+			gs.App.Preferences().SetString(DefaultPathPreference, defaultPath)
+
+			var contentBuffer bytes.Buffer
+			_ = png.Encode(&contentBuffer, gs.Screenshot)
+			content := contentBuffer.Bytes()
+			_, err = reader.Read(content)
+			if err != nil {
+				glog.Errorf("Failed to save image to %q: %s", reader.URI(), fileOpen)
+				gs.status.SetText(fmt.Sprintf("Failed to save image to %q: %s", reader.URI(), err))
+				return
+			}
+			gs.status.SetText(fmt.Sprintf("Saved image to %q", reader.URI()))
+		}, gs.Win)
+
+	fileOpen.SetFileName(gs.DefaultName() + ".png")
+	if defaultPath := gs.App.Preferences().String(DefaultPathPreference); defaultPath != "" {
+		lister, err := storage.ListerForURI(storage.NewFileURI(defaultPath))
+		if err == nil {
+			fileOpen.SetLocation(lister)
+		} else {
+			glog.Warningf("Cannot create a ListableURI for %q", defaultPath)
+		}
+	}
+	size := gs.Win.Canvas().Size()
+	size.Width *= 0.90
+	size.Height *= 0.90
+	fileOpen.Resize(size)
+	fileOpen.Show()
+}
+
 func (gs *FireShotGO) CopyImageToClipboard() {
 	glog.V(2).Info("FireShotGO.CopyImageToClipboard")
 	err := clipboard.CopyImage(gs.Screenshot)
